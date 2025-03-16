@@ -650,4 +650,170 @@ button.control-button:hover {
 
 .atmosphere-netuno {
     box-shadow: 0 0 30px 10px rgba(63, 84, 186, 0.4);
+}
+
+/* Estilos para tela de carregamento */
+#loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.8s ease, visibility 0.8s;
+}
+
+#loading-screen.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.loading-container {
+    max-width: 600px;
+    text-align: center;
+    padding: 20px;
+}
+
+.loading-container h2 {
+    margin: 20px 0;
+    font-size: 24px;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(0, 140, 255, 0.8);
+}
+
+.loading-container p {
+    color: #aaa;
+    font-size: 16px;
+    margin: 10px 0;
+}
+
+.loading-bar {
+    height: 8px;
+    background: rgba(50, 50, 70, 0.5);
+    border-radius: 10px;
+    margin: 20px 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.loading-progress {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #3498db, #2ecc71, #3498db);
+    background-size: 200% 100%;
+    animation: progress-animation 2s linear infinite;
+    border-radius: 10px;
+    transition: width 0.5s ease-out;
+}
+
+@keyframes progress-animation {
+    0% { background-position: 100% 0; }
+    100% { background-position: 0 0; }
+}
+
+/* Estilo para o loader do sistema solar */
+.solar-system-loader {
+    width: 200px;
+    height: 200px;
+    position: relative;
+    margin: 0 auto;
+}
+
+.sun {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    margin-top: -20px;
+    margin-left: -20px;
+    background: radial-gradient(circle, #ff9500, #ff5e00);
+    border-radius: 50%;
+    box-shadow: 0 0 30px #ff9500;
+    animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 30px #ff9500; transform: scale(1); }
+    50% { box-shadow: 0 0 40px #ff9500; transform: scale(1.05); }
+    100% { box-shadow: 0 0 30px #ff9500; transform: scale(1); }
+}
+
+.earth-orbit, .mars-orbit, .jupiter-orbit {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    animation-name: orbit;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+
+.earth-orbit {
+    width: 100px;
+    height: 100px;
+    margin-top: -50px;
+    margin-left: -50px;
+    animation-duration: 8s;
+}
+
+.mars-orbit {
+    width: 140px;
+    height: 140px;
+    margin-top: -70px;
+    margin-left: -70px;
+    animation-duration: 15s;
+}
+
+.jupiter-orbit {
+    width: 180px;
+    height: 180px;
+    margin-top: -90px;
+    margin-left: -90px;
+    animation-duration: 22s;
+}
+
+.earth, .mars, .jupiter {
+    position: absolute;
+    border-radius: 50%;
+}
+
+.earth {
+    top: 0;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    margin-left: -5px;
+    background: linear-gradient(to bottom, #2090ff, #1060b0);
+    box-shadow: 0 0 10px rgba(32, 144, 255, 0.6);
+}
+
+.mars {
+    top: 0;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    margin-left: -4px;
+    background: linear-gradient(to bottom, #ff5050, #b02020);
+    box-shadow: 0 0 8px rgba(255, 80, 80, 0.6);
+}
+
+.jupiter {
+    top: 0;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin-left: -8px;
+    background: linear-gradient(to bottom, #ffaf50, #b06020);
+    box-shadow: 0 0 12px rgba(255, 175, 80, 0.6);
+}
+
+@keyframes orbit {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 } 

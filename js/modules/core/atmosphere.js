@@ -268,17 +268,29 @@ export function removeAtmosphericEffect(planet) {
 }
 
 /**
- * Ativa/desativa efeitos atmosféricos para todos os planetas
+ * Ativa ou desativa efeitos atmosféricos para todos os planetas
  * @param {Object} planets - Objeto contendo todos os planetas
- * @param {Boolean} enabled - Estado dos efeitos atmosféricos
+ * @param {Boolean} enabled - Se os efeitos atmosféricos devem ser ativados
  */
 export function toggleAtmosphericEffects(planets, enabled) {
+    // Verificar se o objeto planets existe e é válido
+    if (!planets || typeof planets !== 'object') {
+        console.warn('Objeto planets inválido ou não inicializado ao tentar aplicar efeitos atmosféricos');
+        return;
+    }
+    
+    console.log(`${enabled ? 'Ativando' : 'Desativando'} efeitos atmosféricos para planetas`);
+    
     // Lista de planetas que devem ter atmosfera
     const planetasComAtmosfera = ['terra', 'venus', 'marte', 'jupiter', 'saturno', 'urano', 'netuno'];
     
+    // Verificar cada planeta na lista
     for (const planetName of planetasComAtmosfera) {
         const planet = planets[planetName];
-        if (!planet) continue;
+        if (!planet) {
+            console.warn(`Planeta ${planetName} não encontrado ao aplicar efeitos atmosféricos`);
+            continue;
+        }
         
         if (enabled) {
             applyAtmosphericEffect(planet, planetName);
@@ -289,14 +301,17 @@ export function toggleAtmosphericEffects(planets, enabled) {
     
     // Verificar também luas com atmosfera como Titan
     if (planets.saturno && planets.saturno.children) {
-        planets.saturno.children.forEach(child => {
-            if (child.name === 'titan') {
-                if (enabled) {
-                    applyAtmosphericEffect(child, 'titan');
-                } else {
-                    removeAtmosphericEffect(child);
-                }
+        const titan = planets.saturno.children.find(moon => moon.name === 'titan');
+        if (titan) {
+            if (enabled) {
+                applyAtmosphericEffect(titan, 'titan', { 
+                    color: 0xffb64d,
+                    intensity: 0.3,
+                    opacity: 0.5
+                });
+            } else {
+                removeAtmosphericEffect(titan);
             }
-        });
+        }
     }
 } 

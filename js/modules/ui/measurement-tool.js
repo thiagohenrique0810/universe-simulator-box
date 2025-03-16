@@ -71,10 +71,28 @@ export function initMeasurementTool(sceneInstance, cameraInstance, controlsInsta
  */
 function createMeasurementControls() {
     // Encontrar o painel de controle principal
-    const controlPanel = document.querySelector('.control-panel');
+    let controlPanel = document.querySelector('.control-panel');
+    
+    // Se o painel não existir, vamos criar um
     if (!controlPanel) {
-        console.error('Painel de controle principal não encontrado');
-        return;
+        console.warn('Painel de controle principal não encontrado. Criando um novo...');
+        
+        // Criar o painel principal se não existir
+        controlPanel = document.createElement('div');
+        controlPanel.className = 'control-panel';
+        
+        // Verificar se o elemento pai existe
+        const controlsContainer = document.getElementById('controls-container');
+        if (controlsContainer) {
+            controlsContainer.appendChild(controlPanel);
+        } else {
+            // Se o container também não existir, criar um e adicionar ao body
+            const newContainer = document.createElement('div');
+            newContainer.id = 'controls-container';
+            document.body.appendChild(newContainer);
+            newContainer.appendChild(controlPanel);
+            console.log('Container de controles criado dinamicamente');
+        }
     }
     
     // Criar o fieldset para os controles da ferramenta de medição

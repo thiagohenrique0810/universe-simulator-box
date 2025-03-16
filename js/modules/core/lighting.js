@@ -1,62 +1,43 @@
 /**
- * Sistema de iluminação realista com oclusão e sombras
- * Implementa iluminação dinâmica, sombras e efeitos de oclusão para o sistema solar
+ * Sistema de Iluminação Realista
+ * Gerencia iluminação, sombras e efeitos atmosféricos
  */
+import * as THREE from 'https://cdn.skypack.dev/three@0.132.2';
 
-import * as THREE from 'https://cdn.skypack.dev/three@0.136.0';
+// Variáveis globais do módulo
+let ambientLight = null;
+let sunLight = null;
+let directionalLight = null;
+let lightTarget = null;
+let currentEclipses = { solar: [], lunar: [] };
 
-// Configurações do sistema de iluminação
+/**
+ * Configurações padrão para o sistema de iluminação
+ */
 const LIGHTING_SETTINGS = {
-    // Qualidade das sombras
-    shadowMapSize: 2048,    // Tamanho do mapa de sombras (potência de 2)
-    shadowQuality: 'high',  // 'low', 'medium', 'high'
-    
-    // Intensidade da luz solar
-    sunIntensity: 1.5,      // Intensidade base da luz solar
-    ambientIntensity: 0.08, // Intensidade da luz ambiente
-    
-    // Configurações de oclusão
-    enableOcclusion: true,  // Ativar oclusão entre corpos celestes
-    occlusionQuality: 'medium', // 'low', 'medium', 'high'
-    
-    // Configurações de eclipses
-    enableEclipses: true,   // Ativar eclipses solares e lunares
-    
-    // Configurações de sombras
-    castShadows: true,      // Ativar projeção de sombras
-    shadowDistance: 300,    // Distância máxima para renderizar sombras
-    shadowBias: -0.0005,    // Ajuste fino para evitar artefatos nas sombras
-    
-    // Configurações avançadas
-    directionalShadows: true, // Usar luz direcional para sombras mais precisas
-    usePCFShadows: true,     // Usar Percentage Closer Filtering para sombras suaves
-    
-    // Limites de renderização para otimização
-    shadowFrustumSize: 150,  // Tamanho do frustum da luz direcional
-    
-    // Configurações de desempenho
-    optimizeShadows: true    // Otimizar sombras para melhor desempenho
+    sunIntensity: 1.5,         // Intensidade da luz do sol
+    sunColor: 0xffffcc,        // Cor da luz do sol
+    sunDistance: 0,            // Distância máxima de alcance (0 = infinito)
+    sunDecay: 2,               // Taxa de decaimento da intensidade com a distância
+    ambientIntensity: 0.15,    // Intensidade da luz ambiente
+    castShadows: true,         // Ativar projeção de sombras
+    enableEclipses: true,      // Ativar detecção de eclipses
+    shadowMapSize: 2048,       // Tamanho da textura de sombra (maior = melhor qualidade, maior custo)
+    shadowBias: -0.001,        // Viés da sombra (para evitar artefatos visuais)
+    shadowFrustumSize: 200,    // Tamanho do frustum da câmera da sombra
+    shadowDistance: 500,       // Distância máxima para projeção de sombras
+    usePCFShadows: true,       // Usar sombras PCF (mais suaves)
+    eclipseThreshold: 0.95,    // Limiar de cobertura para considerar um eclipse
+    maxEclipseObjects: 10      // Número máximo de objetos a verificar para efeitos de eclipse
 };
 
-// Objetos do sistema de iluminação
-let sunLight;             // Luz principal do sol
-let ambientLight;         // Luz ambiente global
-let directionalLight;     // Luz direcional para sombras
-let lightTarget;          // Alvo para a luz direcional
 let shadowUpdateFrames = 5; // Atualiza sombras a cada N frames para melhor desempenho
-
-// Rastreamento de eclipses
-let currentEclipses = {
-    solar: [],  // Eclipses solares ativos
-    lunar: []   // Eclipses lunares ativos
-};
 
 /**
  * Inicializa o sistema de iluminação realista
- * @param {THREE.Scene} scene - Cena principal
- * @param {Object} sol - Objeto do sol
- * @param {Object} customSettings - Configurações personalizadas (opcional)
- * @returns {Object} API do sistema de iluminação
+ * @param {THREE.Scene} scene - Cena Three.js
+ * @param {THREE.Object3D} sol - Objeto do sol (opcional)
+ * @param {Object} customSettings - Configurações personalizadas
  */
 export function initRealisticLighting(scene, sol, customSettings = {}) {
     console.log('Inicializando sistema de iluminação realista...');
@@ -78,6 +59,16 @@ export function initRealisticLighting(scene, sol, customSettings = {}) {
     ambientLight.name = 'ambientLight';
     scene.add(ambientLight);
     
+    // Verificar se o sol foi fornecido e é válido
+    if (!sol) {
+        console.warn('Objeto sol não fornecido ou inválido. Criando um sol padrão...');
+        // Criar um sol padrão no centro da cena
+        sol = new THREE.Group();
+        sol.name = 'solPadrao';
+        sol.position.set(0, 0, 0);
+        scene.add(sol);
+    }
+    
     // Configurar luz principal do sol
     setupSunLight(scene, sol, settings);
     
@@ -87,72 +78,87 @@ export function initRealisticLighting(scene, sol, customSettings = {}) {
     }
     
     // Configurar detector de eclipses
-    if (settings.enableEclipses) {
-        setupEclipseDetector();
-    }
+    setupEclipseDetector();
     
-    // Retornar API pública
+    // Retornar API do sistema de iluminação
     return {
         updateLighting: (planets, camera) => updateLighting(scene, sol, planets, camera, settings),
-        getSunLight: () => sunLight,
-        getDirectionalLight: () => directionalLight,
         setIntensity: (intensity) => {
             if (sunLight) sunLight.intensity = intensity;
             if (directionalLight) directionalLight.intensity = intensity * 0.8;
+            settings.sunIntensity = intensity;
         },
         setShadowsEnabled: (enabled) => {
-            if (directionalLight) {
-                directionalLight.castShadow = enabled;
-                settings.castShadows = enabled;
-            }
+            settings.castShadows = enabled;
+            if (directionalLight) directionalLight.castShadow = enabled;
         },
         setEclipsesEnabled: (enabled) => {
             settings.enableEclipses = enabled;
+            if (!enabled) {
+                // Limpar efeitos de eclipse
+                clearEclipseEffects(planets);
+            }
         },
-        getEclipses: () => currentEclipses,
-        getSettings: () => Object.assign({}, settings)
+        getSunLight: () => sunLight,
+        getDirectionalLight: () => directionalLight,
+        getSettings: () => ({ ...settings }),  // Retorna uma cópia das configurações
+        cleanup: () => removeLightingSystem(scene)
     };
 }
 
 /**
- * Configura a luz principal do sol
- * @param {THREE.Scene} scene - Cena principal
- * @param {Object} sol - Objeto do sol
+ * Configura a luz principal emitida pelo sol
+ * @param {THREE.Scene} scene - Cena Three.js
+ * @param {THREE.Object3D} sol - Objeto do sol
  * @param {Object} settings - Configurações de iluminação
  */
 function setupSunLight(scene, sol, settings) {
-    // Remover luz existente no sol, se houver
-    sol.children.forEach(child => {
-        if (child.isLight) {
-            sol.remove(child);
-        }
-    });
+    // Verificar se o sol existe e tem children antes de tentar acessá-lo
+    if (sol && sol.children) {
+        // Remover luz existente no sol, se houver
+        sol.children.forEach(child => {
+            if (child.isLight) {
+                sol.remove(child);
+            }
+        });
+    }
     
-    // Criar nova luz pontual para o sol
-    sunLight = new THREE.PointLight(0xffffcc, settings.sunIntensity, 0, 2);
+    // Criar luz pontual no centro do sol
+    const sunLight = new THREE.PointLight(
+        settings.sunColor,
+        settings.sunIntensity,
+        settings.sunDistance,
+        settings.sunDecay
+    );
     sunLight.name = 'sunLight';
     
-    // Adicionar a luz ao sol
-    sol.add(sunLight);
+    // Adicionar luz ao sol ou à cena
+    if (sol) {
+        sol.add(sunLight);
+    } else {
+        sunLight.position.set(0, 0, 0);
+        scene.add(sunLight);
+    }
     
-    console.log('Luz do sol configurada com intensidade:', settings.sunIntensity);
+    // Retornar referência à luz
+    return sunLight;
 }
 
 /**
  * Configura luz direcional para sombras
- * @param {THREE.Scene} scene - Cena principal
- * @param {Object} sol - Objeto do sol
+ * @param {THREE.Scene} scene - Cena Three.js
+ * @param {THREE.Object3D} sol - Objeto do sol
  * @param {Object} settings - Configurações de iluminação
  */
 function setupShadowLight(scene, sol, settings) {
     // Criar alvo para a luz direcional
-    lightTarget = new THREE.Object3D();
+    const lightTarget = new THREE.Object3D();
     lightTarget.name = 'lightTarget';
     lightTarget.position.set(0, 0, 0);
     scene.add(lightTarget);
     
     // Criar luz direcional para sombras (emana do sol, mas com projeção paralela para sombras melhores)
-    directionalLight = new THREE.DirectionalLight(0xffffcc, settings.sunIntensity * 0.8);
+    const directionalLight = new THREE.DirectionalLight(0xffffcc, settings.sunIntensity * 0.8);
     directionalLight.name = 'directionalLight';
     directionalLight.castShadow = settings.castShadows;
     directionalLight.shadow.bias = settings.shadowBias;
@@ -167,35 +173,34 @@ function setupShadowLight(scene, sol, settings) {
     directionalLight.shadow.camera.right = size;
     directionalLight.shadow.camera.top = size;
     directionalLight.shadow.camera.bottom = -size;
-    directionalLight.shadow.camera.near = 1;
-    directionalLight.shadow.camera.far = settings.shadowDistance;
+    directionalLight.shadow.camera.near = 0.5;
+    directionalLight.shadow.camera.far = 500;
     
-    // Configurar filtro de sombras para tornás-las mais suaves
-    if (settings.usePCFShadows) {
-        directionalLight.shadow.type = THREE.PCFSoftShadowMap;
+    // Colocar a luz direcional na posição do sol ou no centro da cena
+    if (sol) {
+        sol.add(directionalLight);
+    } else {
+        directionalLight.position.set(0, 0, 0);
+        scene.add(directionalLight);
     }
     
-    // Posicionar a luz inicial
-    directionalLight.position.copy(sol.position);
     directionalLight.target = lightTarget;
     
-    // Adicionar a luz à cena
-    scene.add(directionalLight);
-    
-    console.log('Luz direcional para sombras configurada');
+    // Retornar referência à luz
+    return {
+        light: directionalLight,
+        target: lightTarget
+    };
 }
 
 /**
- * Configura detector de eclipses
+ * Configura o detector de eclipses
  */
 function setupEclipseDetector() {
-    // Inicializar lista de eclipses vazios
-    currentEclipses = {
-        solar: [],
-        lunar: []
-    };
+    console.log('Sistema de detecção de eclipses inicializado');
     
-    console.log('Detector de eclipses configurado');
+    // A detecção de eclipses é realizada durante a atualização de iluminação
+    // e não requer configuração adicional
 }
 
 /**
@@ -508,12 +513,35 @@ function removeLightingSystem(scene) {
 
 /**
  * Prepara um objeto para receber sombras
- * @param {THREE.Object3D} object - Objeto a ser configurado
+ * @param {THREE.Object3D|Object} object - Objeto a ser configurado ou coleção de objetos
  * @param {Boolean} castShadow - Se o objeto deve projetar sombras
  * @param {Boolean} receiveShadow - Se o objeto deve receber sombras
  */
 export function setupObjectForShadows(object, castShadow = true, receiveShadow = true) {
-    // Configurar o objeto principal
+    // Verificar se o objeto é válido
+    if (!object) {
+        console.warn('Objeto inválido passado para setupObjectForShadows');
+        return;
+    }
+    
+    // Verificar se é uma coleção de objetos (como o objeto planets)
+    if (typeof object === 'object' && !Array.isArray(object) && !(object instanceof THREE.Object3D)) {
+        const numItems = Object.keys(object).length;
+        console.log('Configurando sombras para coleção de objetos:', numItems, 'itens');
+        
+        // Iterar sobre as propriedades do objeto, mas apenas tratar objetos 3D para evitar recursão infinita
+        for (const key in object) {
+            if (object[key] && object[key] instanceof THREE.Object3D) {
+                // Apenas processar objetos 3D para evitar loop infinito
+                setupObjectForShadows(object[key], castShadow, receiveShadow);
+            }
+        }
+        return;
+    }
+    
+    // A partir daqui, tratamos um objeto 3D individual
+    
+    // Configurar o objeto principal se for um Mesh
     if (object.isMesh) {
         object.castShadow = castShadow;
         object.receiveShadow = receiveShadow;

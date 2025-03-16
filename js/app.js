@@ -3,6 +3,9 @@
  * Aplicação principal que coordena todos os módulos
  */
 
+// Importação do sistema de carregamento
+import { initLoadingScreen, updateProgress, updateStatus, completeLoading } from './modules/ui/loading-screen.js';
+
 // Importação dos módulos de dados
 import { PLANET_DATA } from './modules/data/planet-data.js';
 import { PLANET_INFO } from './modules/data/planet-info.js';
@@ -88,24 +91,32 @@ let oortCloudSystem;
 let measurementTool;
 let missionsSystem;
 let vrSystem;
+let objectsWithShaders = []; // Objetos que utilizam shaders personalizados
 
 // Variáveis globais para o sistema de exoplanetas
 let exoplanetSystem;
 let exoplanetPanel;
 
+// Variáveis dos controladores
+let weatherIntensity = 0.5;
+
+// Inicialização do sistema de carregamento
+const loadingSystem = initLoadingScreen(18); // Número total de etapas de carregamento
+
 /**
- * Inicializa o sistema solar
+ * Função principal para inicializar o simulador
  */
-function init() {
-    console.log('Inicializando o simulador do sistema solar');
+async function init() {
+    // Inicializar o sistema Three.js
+    updateStatus("Inicializando o sistema de renderização 3D...");
+    const rendererSetup = initRenderer();
+    renderer = rendererSetup.renderer;
+    scene = rendererSetup.scene;
+    camera = rendererSetup.camera;
+    controls = rendererSetup.controls;
+    updateProgress();
     
-    // Inicializar o sistema de renderização
-    const renderSystem = initRenderer();
-    scene = renderSystem.scene;
-    camera = renderSystem.camera;
-    renderer = renderSystem.renderer;
-    controls = renderSystem.controls;
-    
+    updateStatus("Configurando ambiente do sistema solar...");
     // Aplicar o favicon
     try {
         // Tentar usar a versão dinâmica do favicon
@@ -116,58 +127,110 @@ function init() {
         applyStaticFavicon();
     }
     
-    // Ajustar velocidades dos planetas de acordo com a Terceira Lei de Kepler
+    updateStatus("Criando corpos celestes...");
+    // Criar os planetas, luas e outros corpos celestes
+    const celestialSetup = createCelestialBodies(scene, PLANET_DATA);
+    
+    // Verificar se o setup foi bem-sucedido
+    if (celestialSetup && celestialSetup.planets) {
+        planets = celestialSetup.planets;
+        console.log("Planetas criados com sucesso:", Object.keys(planets).length, "planetas");
+    } else {
+        console.error("Falha ao criar planetas");
+        // Criar um objeto planets vazio para evitar erros futuros
+        planets = {};
+    }
+    
+    // Verificar e obter objectsWithShaders se disponível
+    if (celestialSetup && celestialSetup.objectsWithShaders) {
+        objectsWithShaders = celestialSetup.objectsWithShaders;
+    } else {
+        objectsWithShaders = [];
+    }
+    
+    updateProgress();
+    
+    updateStatus("Calculando órbitas planetárias...");
+    // Inicializar as órbitas
     ajustarVelocidadesKeplerianas(PLANET_DATA);
+    // Validar as órbitas dos planetas
+    validatePlanetOrbits(planets, PLANET_DATA);
+    updateProgress();
     
-    // Criar o campo de estrelas
-    console.log('Criando campo de estrelas e skybox...');
-    const starsSystem = createStars(scene);
-    stars = starsSystem.stars;
-    skybox = starsSystem.skybox;
-    console.log('Skybox criado:', skybox);
+    updateStatus("Configurando efeitos de iluminação...");
+    // Configurar iluminação realista
+    console.log("Objeto planets:", planets); // Diagnóstico
+    if (planets && planets['sol']) {
+        initRealisticLighting(scene, planets['sol']);
+    } else {
+        console.warn("Objeto sol não encontrado, inicializando iluminação apenas com a cena");
+        initRealisticLighting(scene);
+    }
+    // Configurar cada planeta para sombras
+    if (planets) {
+        console.log("Configurando sombras para os planetas:", Object.keys(planets).length, "planetas encontrados");
+        setupObjectForShadows(planets);
+    } else {
+        console.warn("Objeto planets está vazio ou indefinido, impossível configurar sombras");
+    }
+    updateProgress();
     
-    // Criar planetas, sol e luas
-    planets = createCelestialBodies(scene, PLANET_DATA);
-    
+    updateStatus("Criando cinturão de asteroides...");
     // Criar cinturão de asteroides
     const asteroidSystem = createAsteroidBelt(scene);
     asteroidBelt = asteroidSystem.asteroidBelt;
     beltRing = asteroidSystem.beltRing;
+    updateProgress();
     
-    // Realizar uma validação inicial de órbitas para garantir posicionamento correto
-    validatePlanetOrbits(planets, getOrbits());
+    updateStatus("Posicionando estrelas de fundo...");
+    // Criar estrelas de fundo e Via Láctea
+    const starsSystem = createStars(scene);
+    stars = starsSystem.stars;
+    skybox = starsSystem.skybox;
+    updateProgress();
     
+    updateStatus("Aplicando efeitos atmosféricos...");
     // Aplicar efeitos atmosféricos aos planetas
-    console.log('Aplicando efeitos atmosféricos...');
-    toggleAtmosphericEffects(planets, true);
+    if (planets && Object.keys(planets).length > 0) {
+        console.log("Aplicando efeitos atmosféricos aos planetas");
+        toggleAtmosphericEffects(planets, true);
+    } else {
+        console.warn("Não foi possível aplicar efeitos atmosféricos: objeto planets não inicializado corretamente");
+    }
+    updateProgress();
     
+    updateStatus("Inicializando sistema de colisões...");
     // Inicializar o sistema de colisões
-    console.log('Inicializando sistema de colisões...');
     collisionSystem = initCollisionSystem(scene);
+    updateProgress();
     
+    updateStatus("Aplicando sistemas climáticos aos planetas...");
     // Pré-carregar texturas para o sistema climático
     preloadClimateTextures().then(() => {
-        // Aplicar sistema climático aos planetas que têm atmosfera
-        console.log('Aplicando sistemas climáticos aos planetas...');
-        applyClimateSystem(planets.terra, 'terra');
-        applyClimateSystem(planets.venus, 'venus');
-        applyClimateSystem(planets.jupiter, 'jupiter');
-        applyClimateSystem(planets.saturno, 'saturno');
-        applyClimateSystem(planets.urano, 'urano');
-        applyClimateSystem(planets.netuno, 'netuno');
+        // Verificar se os planetas existem antes de aplicar o sistema climático
+        if (planets) {
+            // Aplicar sistema climático aos planetas que têm atmosfera, apenas se existirem
+            if (planets.terra) applyClimateSystem(planets.terra, 'terra');
+            if (planets.venus) applyClimateSystem(planets.venus, 'venus');
+            if (planets.jupiter) applyClimateSystem(planets.jupiter, 'jupiter');
+            if (planets.saturno) applyClimateSystem(planets.saturno, 'saturno');
+            if (planets.urano) applyClimateSystem(planets.urano, 'urano');
+            if (planets.netuno) applyClimateSystem(planets.netuno, 'netuno');
+            
+            console.log("Sistemas climáticos aplicados com sucesso aos planetas existentes");
+        } else {
+            console.warn("Não foi possível aplicar sistemas climáticos: objeto planets não inicializado");
+        }
         
         // Marcar o sistema climático como inicializado
         climateInitialized = true;
     }).catch(error => {
         console.error('Erro ao carregar texturas para o sistema climático:', error);
     });
+    updateProgress();
     
-    // Configurar iluminação realista
-    console.log('Inicializando sistema de iluminação realista...');
-    lightingSystem = initRealisticLighting(scene, planets.sol);
-    
+    updateStatus("Inicializando sistema de iluminação realista...");
     // Configurar objetos para projetar e receber sombras
-    console.log('Configurando objetos para sombras...');
     for (const planetName in planets) {
         if (planetName !== 'sol') { // O sol não deve projetar sombras, apenas emitir luz
             setupObjectForShadows(planets[planetName], true, true);
@@ -178,82 +241,23 @@ function init() {
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     
-    // Criar objeto com utilidades de câmera
-    const camera_utils = {
-        focusOnObject: (object, animate = true) => {
-            if (!object) return;
-            
-            // Obter a posição do objeto
-            const position = object.position.clone();
-            
-            // Definir a posição alvo da câmera
-            // Adicionar offset para não ficar exatamente sobre o objeto
-            const offset = new THREE.Vector3(5, 3, 5);
-            const targetPosition = position.clone().add(offset);
-            
-            if (animate) {
-                // Animação suave
-                const startPosition = camera.position.clone();
-                const startTarget = controls.target.clone();
-                const duration = 1000; // 1 segundo
-                const startTime = Date.now();
-                
-                function animateCamera() {
-                    const elapsed = Date.now() - startTime;
-                    const progress = Math.min(elapsed / duration, 1);
-                    const easeProgress = 1 - Math.pow(1 - progress, 3); // Easing out cubic
-                    
-                    // Interpolar posição
-                    camera.position.lerpVectors(startPosition, targetPosition, easeProgress);
-                    
-                    // Interpolar alvo
-                    controls.target.lerpVectors(startTarget, position, easeProgress);
-                    controls.update();
-                    
-                    if (progress < 1) {
-                        requestAnimationFrame(animateCamera);
-                    }
-                }
-                
-                animateCamera();
-            } else {
-                // Mudança imediata
-                camera.position.copy(targetPosition);
-                controls.target.copy(position);
-                controls.update();
-            }
-        }
-    };
+    updateProgress();
     
-    // Configurar o sistema de seleção de planetas, luas e planetas anões
-    setupPlanetSelection(
-        scene, 
-        camera, 
-        (planetName) => showPlanetInfo(planetName, PLANET_INFO, PLANET_DATA),
-        (moonName, planetName) => showMoonInfo(moonName, planetName, PLANET_DATA),
-        (dwarfPlanetName) => showDwarfPlanetInfo(dwarfPlanetName),
-        renderer,
-        planets,
-        camera_utils,
-        (objectName) => showKuiperObjectInfo(objectName)
-    );
-    
-    // Criar o painel de informações
-    createInfoPanel(PLANET_INFO);
-    
-    // Configurar a música de fundo
-    setupBackgroundMusic();
-    
-    // Configurar controles de visibilidade
-    console.log('Configurando controles de visibilidade...');
-    createSimulationControls();
+    updateStatus("Configurando sistema de comparação de planetas...");
+    // Verificar se o container de controles existe
+    if (!document.getElementById('controls-container')) {
+        console.log("Criando container de controles para o sistema de comparação de planetas");
+        const controlsContainer = document.createElement('div');
+        controlsContainer.id = 'controls-container';
+        document.body.appendChild(controlsContainer);
+    }
     
     // Inicializar sistema de comparação de planetas
-    console.log('Configurando sistema de comparação de planetas...');
     initPlanetComparison();
+    updateProgress();
     
+    updateStatus("Configurando sistema de tour guiado...");
     // Inicializar sistema de tour guiado
-    console.log('Configurando sistema de tour guiado...');
     tourGuideSystem = initTourGuide(scene, camera, controls, planets, {
         positionCamera: (position, target) => {
             gsap.to(camera.position, {
@@ -267,57 +271,156 @@ function init() {
             });
         }
     });
+    updateProgress();
     
+    updateStatus("Configurando sistema de chuvas de meteoros...");
     // Inicializar sistema de chuvas de meteoros
-    console.log('Configurando sistema de chuvas de meteoros...');
     meteorSystem = initMeteorShowers(scene, {
         sunPosition: new THREE.Vector3(0, 0, 0),
         planets: planets
     });
+    updateProgress();
     
-    // Expor função para acesso global (necessário para os botões no painel de eventos)
-    window.meteorSystem = meteorSystem;
+    updateStatus("Inicializando a Nuvem de Oort e sistema de cometas...");
+    // Verificar se o sol existe antes de inicializar a Nuvem de Oort
+    const sunObject = planets && planets.sol ? planets.sol : null;
+    // Iniciar a Nuvem de Oort
+    oortCloudSystem = initOortCloud(scene, {
+        radius: 10000,
+        sun: sunObject
+    });
+    updateProgress();
+    
+    updateStatus("Inicializando a ferramenta de medição de distâncias...");
+    // Verificar se o container de controles existe, criando-o se necessário
+    if (!document.getElementById('controls-container')) {
+        console.log('Criando container de controles para a ferramenta de medição...');
+        const controlsContainer = document.createElement('div');
+        controlsContainer.id = 'controls-container';
+        document.body.appendChild(controlsContainer);
+    }
+    
+    // Inicializar a ferramenta de medição
+    measurementTool = initMeasurementTool(scene, camera, controls, planets);
+    updateProgress();
+    
+    updateStatus("Inicializando o simulador de missões espaciais...");
+    // Inicializar o simulador de missões espaciais
+    missionsSystem = initSpaceMissions(scene, planets);
+    updateProgress();
+    
+    updateStatus("Inicializando o painel de controle de missões...");
+    // Inicializar o painel de controle de missões
+    initMissionsPanel(missionsSystem);
+    updateProgress();
+    
+    updateStatus("Inicializando o sistema VR...");
+    // Inicializar o sistema VR
+    vrSystem = initVRSystem(scene, renderer, camera, controls, planets);
+    if (vrSystem.isVRSupported) {
+        console.log('Sistema VR inicializado com sucesso');
+    } else {
+        console.warn('WebXR não suportado neste navegador. O modo VR não estará disponível.');
+    }
+    updateProgress();
+    
+    updateStatus("Inicializando o sistema de exoplanetas...");
+    // Inicializar sistema de exoplanetas
+    exoplanetSystem = initExoplanetSystem(scene);
+    if (exoplanetSystem) {
+        console.log('Sistema de exoplanetas inicializado');
+        
+        // Inicializar painel de controle de exoplanetas
+        exoplanetPanel = initExoplanetPanel(exoplanetSystem, camera, controls);
+    }
+    updateProgress();
+    
+    updateStatus("Finalizando configurações...");
+    updateProgress();
+    
+    // Adicionar ao final da função init() antes de completeLoading()
+    updateStatus("Configurando controles da interface...");
+    
+    // Configurar eventos dos controles
+    setupControlEvents();
+    
+    // Configurar o sistema de seleção de planetas
+    setupPlanetSelection(
+        scene, 
+        camera, 
+        (planetName) => showPlanetInfo(planetName, PLANET_INFO, PLANET_DATA),
+        (moonName, planetName) => showMoonInfo(moonName, planetName, PLANET_DATA),
+        (dwarfPlanetName) => showDwarfPlanetInfo(dwarfPlanetName),
+        renderer,
+        planets,
+        {
+            focusOnObject: (object, animate = true) => {
+                if (!object) return;
+                
+                // Obter a posição do objeto
+                const position = object.position.clone();
+                
+                // Definir a posição alvo da câmera
+                // Adicionar offset para não ficar exatamente sobre o objeto
+                const offset = new THREE.Vector3(5, 3, 5);
+                const targetPosition = position.clone().add(offset);
+                
+                if (animate) {
+                    // Animação suave
+                    const startPosition = camera.position.clone();
+                    const startTarget = controls.target.clone();
+                    const duration = 1000; // 1 segundo
+                    const startTime = Date.now();
+                    
+                    function animateCamera() {
+                        const elapsed = Date.now() - startTime;
+                        const progress = Math.min(elapsed / duration, 1);
+                        const easeProgress = 1 - Math.pow(1 - progress, 3); // Easing out cubic
+                        
+                        // Interpolar posição
+                        camera.position.lerpVectors(startPosition, targetPosition, easeProgress);
+                        
+                        // Interpolar alvo
+                        controls.target.lerpVectors(startTarget, position, easeProgress);
+                        controls.update();
+                        
+                        if (progress < 1) {
+                            requestAnimationFrame(animateCamera);
+                        }
+                    }
+                    
+                    animateCamera();
+                } else {
+                    // Mudança imediata
+                    camera.position.copy(targetPosition);
+                    controls.target.copy(position);
+                    controls.update();
+                }
+            }
+        },
+        (objectName) => showKuiperObjectInfo(objectName)
+    );
+    
+    // Criar o painel de informações
+    createInfoPanel(PLANET_INFO);
+    
+    // Configurar a música de fundo
+    setupBackgroundMusic();
+    
+    // Configurar painel de controles de simulação
+    createSimulationControls();
+    
+    // Inicializar controles da Nuvem de Oort
+    initOortCloudControls(oortCloudSystem);
+    
+    // Inicializar a física avançada
+    initGravityPhysics(planets, PLANET_DATA);
     
     // Configurar evento para atualização do modo de comparação
     document.addEventListener('comparison-mode-changed', function(event) {
         const isActive = event.detail.active;
         setComparisonMode(isActive);
     });
-    
-    // Inicializar a física avançada
-    initGravityPhysics(planets, PLANET_DATA);
-    
-    // Configurar eventos dos controles
-    setupControlEvents();
-    
-    // Criar o painel de controle principal se não existir
-    if (!document.querySelector('.control-panel')) {
-        console.log('Criando painel de controle principal...');
-        const controlPanel = document.createElement('div');
-        controlPanel.className = 'control-panel';
-        document.body.appendChild(controlPanel);
-    }
-    
-    // Iniciar a Nuvem de Oort
-    console.log('Inicializando a Nuvem de Oort e sistema de cometas...');
-    oortCloudSystem = initOortCloud(scene, {
-        radius: 10000,
-        sun: planets.sol
-    });
-    
-    // Inicializar controles da Nuvem de Oort
-    initOortCloudControls(oortCloudSystem);
-    
-    // Inicializar a ferramenta de medição
-    console.log('Inicializando a ferramenta de medição de distâncias...');
-    measurementTool = initMeasurementTool(scene, camera, controls, planets);
-    
-    // Inicializar o simulador de missões espaciais
-    console.log('Inicializando o simulador de missões espaciais...');
-    missionsSystem = initSpaceMissions(scene, planets);
-    
-    // Inicializar o painel de controle de missões
-    initMissionsPanel(missionsSystem);
     
     // Adicionar listener para controle de visibilidade das missões espaciais
     document.addEventListener('toggle-space-missions', function(event) {
@@ -327,25 +430,8 @@ function init() {
         }
     });
     
-    // Inicializar o sistema VR
-    vrSystem = initVRSystem(scene, renderer, camera, controls, planets);
-    if (vrSystem.isVRSupported) {
-        console.log('Sistema VR inicializado com sucesso');
-    } else {
-        console.warn('WebXR não suportado neste navegador. O modo VR não estará disponível.');
-    }
-    
-    // Inicializar sistema de exoplanetas
-    exoplanetSystem = initExoplanetSystem(scene);
-    if (exoplanetSystem) {
-        console.log('Sistema de exoplanetas inicializado');
-        
-        // Inicializar painel de controle de exoplanetas
-        exoplanetPanel = initExoplanetPanel(exoplanetSystem, camera, controls);
-    }
-    
-    // Iniciar a animação
-    animate();
+    // Expor função para acesso global (necessário para os botões no painel de eventos)
+    window.meteorSystem = meteorSystem;
     
     // Exibir mensagem de ajuda sobre duplo clique
     const infoElement = document.getElementById('info');
@@ -361,6 +447,15 @@ function init() {
             setTimeout(() => helpText.remove(), 1000);
         }, 10000);
     }
+    
+    updateProgress();
+    
+    // Completar o carregamento e esconder a tela
+    setTimeout(() => {
+        completeLoading();
+        // Iniciar a animação somente depois que a tela de carregamento sumir
+        animate();
+    }, 1000);
 }
 
 /**

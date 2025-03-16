@@ -12,9 +12,12 @@ let planets = {};
  * Cria o Sol, planetas e luas com suas texturas
  * @param {Object} scene - Cena Three.js
  * @param {Object} PLANET_DATA - Dados dos planetas
- * @returns {Object} Objeto contendo os planetas criados
+ * @returns {Object} Objeto contendo os planetas criados e objetos com shaders
  */
 export function createCelestialBodies(scene, PLANET_DATA) {
+    // Array para armazenar objetos que usam shaders personalizados
+    const objectsWithShaders = [];
+    
     // Texturas temporárias até baixarmos as reais
     const textureLoader = new THREE.TextureLoader();
     
@@ -188,7 +191,10 @@ export function createCelestialBodies(scene, PLANET_DATA) {
     // Tentar carregar texturas
     loadTextures(PLANET_DATA);
     
-    return planets;
+    return {
+        planets: planets,
+        objectsWithShaders: objectsWithShaders
+    };
 }
 
 /**

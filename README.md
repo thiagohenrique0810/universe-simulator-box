@@ -65,6 +65,7 @@ Um simulador 3D interativo do Sistema Solar desenvolvido com Three.js, que permi
 - **Sistema de Busca**: Busca rápida por planetas, luas e outros objetos celestes
 - **Modo Noturno**: Interface com opção de modo escuro e filtro de luz azul ajustável
 - **Ferramenta de Medição**: Sistema para medir distâncias entre corpos celestes com cálculos de tempo de viagem
+- **Tela de Carregamento**: Sistema de loading visualmente atrativo com animação do sistema solar e barra de progresso
 - **Modo VR**: Suporte para exploração em realidade virtual com dispositivos compatíveis com WebXR
 
 ### 👁️ Personalização da Visualização
@@ -247,6 +248,13 @@ cd universe-simulator-box
   - [ ] Indicadores visuais do estado atual de comunicação com cada sonda
 
 ## 🆕 Atualizações Recentes
+
+### ✅ Tela de Carregamento Adicionada
+- Interface de loading com animação solar antes do início da simulação
+- Barra de progresso com indicação visual do carregamento
+- Mensagens de status informando o componente em carregamento
+- Transição suave para a simulação após carregamento completo
+- Design com mini-simulação animada do Sistema Solar durante a espera
 
 ### ✅ Sistema de Missões Espaciais Aprimorado
 - Melhorias na sincronização entre controles e visualização 3D
