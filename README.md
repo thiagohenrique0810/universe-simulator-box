@@ -56,15 +56,32 @@ cd simulador-sistema-solar
 
 - `index.html`: Página principal
 - `styles.css`: Estilos da página
-- `js/app.js`: Código principal do simulador
-- `js/textures-downloader.js`: Informações para download das texturas
+- `js/app.js`: Código principal do simulador (arquivo coordenador)
+- `js/modules/`: Pasta contendo os módulos do sistema
+  - `data/`: Dados do sistema
+    - `planet-data.js`: Dados físicos dos planetas
+    - `planet-info.js`: Informações descritivas dos planetas
+  - `core/`: Componentes principais
+    - `renderer.js`: Configuração do sistema de renderização Three.js
+    - `celestial-bodies.js`: Criação e gerenciamento de planetas e luas
+    - `orbits.js`: Sistema de órbitas planetárias
+    - `asteroids.js`: Sistema do cinturão de asteroides
+    - `stars.js`: Sistema de estrelas de fundo
+  - `ui/`: Componentes de interface
+    - `info-panel.js`: Painel de informações dos planetas
+    - `planet-selection.js`: Sistema de seleção de planetas
+    - `simulation-controls.js`: Controles de simulação e visibilidade
+  - `audio/`: Sistema de áudio
+    - `background-music.js`: Gerenciamento da música de fundo
 - `textures/`: Pasta para armazenar as texturas dos planetas (precisa ser criada)
+- `sounds/`: Pasta com arquivos de áudio
 
 ## Tecnologias Utilizadas
 
 - **Three.js**: Para renderização 3D e manipulação da cena
 - **HTML5/CSS3**: Para a estrutura e estilo da página
-- **JavaScript**: Para a lógica de programação e interatividade
+- **JavaScript (ES6 Modules)**: Para a lógica de programação e interatividade
+- **OrbitControls**: Para manipulação da câmera
 
 ## Referências de Texturas
 
