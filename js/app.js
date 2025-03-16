@@ -26,9 +26,10 @@ import {
 import { createStars, toggleStarsVisibility, toggleSkyboxVisibility } from './modules/core/stars.js';
 
 // Importação dos módulos de UI
-import { setupPlanetSelection, updateCameraFocus } from './modules/ui/planet-selection.js';
+import { setupPlanetSelection, updateCameraFocus, setComparisonMode } from './modules/ui/planet-selection.js';
 import { createInfoPanel, showPlanetInfo, showMoonInfo, showDwarfPlanetInfo } from './modules/ui/info-panel.js';
 import { createSimulationControls, getSimulationSpeed } from './modules/ui/simulation-controls.js';
+import { initPlanetComparison } from './modules/ui/planet-comparison.js';
 
 // Importação do módulo de áudio
 import { setupBackgroundMusic } from './modules/audio/background-music.js';
@@ -110,6 +111,16 @@ function init() {
         toggleAsteroidBeltVisibility,
         toggleBeltRingVisibility,
         toggleSaturnRingsVisibility
+    });
+    
+    // Inicializar sistema de comparação de planetas
+    console.log('Configurando sistema de comparação de planetas...');
+    initPlanetComparison();
+    
+    // Configurar evento para atualização do modo de comparação
+    document.addEventListener('comparison-mode-changed', function(event) {
+        const isActive = event.detail.active;
+        setComparisonMode(isActive);
     });
     
     // Iniciar a animação

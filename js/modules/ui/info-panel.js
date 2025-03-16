@@ -16,8 +16,8 @@ export function createInfoPanel(PLANET_INFO) {
     infoPanel = document.createElement('div');
     infoPanel.id = 'planet-info';
     infoPanel.style.position = 'absolute';
-    infoPanel.style.right = '10px';
-    infoPanel.style.top = '10px';
+    infoPanel.style.left = '10px';
+    infoPanel.style.top = '80px';
     infoPanel.style.width = '300px';
     infoPanel.style.background = 'rgba(0, 0, 0, 0.7)';
     infoPanel.style.padding = '15px';
@@ -208,8 +208,10 @@ export function showMoonInfo(moonName, planetName, PLANET_DATA) {
         
         console.log(`Satélites do planeta ${planetName}:`, planet.satellites.map(s => s.name).join(', '));
         
-        const moon = planet.satellites.find(sat => sat.name === moonName);
-        console.log(`Lua encontrada: ${!!moon}, nome buscado: ${moonName}`);
+        // Converter moonName para minúsculo para comparação
+        const moonNameLower = moonName.toLowerCase();
+        const moon = planet.satellites.find(sat => sat.name.toLowerCase() === moonNameLower);
+        console.log(`Lua encontrada: ${!!moon}, nome buscado: ${moonName} (${moonNameLower})`);
         
         if (!moon) {
             console.error(`Lua ${moonName} não encontrada para o planeta ${planetName}.`);
