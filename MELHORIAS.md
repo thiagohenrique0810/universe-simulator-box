@@ -237,10 +237,161 @@ Este documento lista as melhorias planejadas para o simulador do sistema solar, 
 **Arquivos modificados:** js/modules/core/lighting.js, js/modules/ui/controls/lighting-controls.js, js/modules/ui/controls/visibility-controls.js, js/app.js
 **Observações:** Criado um sistema completo de iluminação realista que inclui projeção de sombras entre corpos celestes, detecção de eclipses solares e lunares, e efeitos de oclusão de luz. O sistema utiliza tanto luzes pontuais quanto direcionais para criar sombras de alta qualidade. Foram adicionados controles para ajustar a intensidade da luz solar e ativar/desativar sombras e eclipses. O sistema também otimiza o desempenho atualizando as sombras apenas quando necessário e ajustando o frustum da câmera com base na posição do observador.
 
+### [15/03/2024] - [Tour Guiado pelo Sistema Solar]
+**Descrição:** Implementado sistema de tour guiado interativo pelos planetas e outros corpos celestes.
+**Arquivos modificados:** js/modules/ui/tour-guide.js, js/app.js, styles.css
+**Observações:** O tour guiado permite aos usuários explorar os diferentes corpos celestes do Sistema Solar de forma sequencial e educativa. O sistema inclui 15 paradas, desde o Sol até o Cinturão de Kuiper, com descrições informativas sobre cada corpo celeste. A interface apresenta controles para navegar entre as paradas (anterior/próximo), pausar o tour, ou encerrá-lo. A câmera realiza transições suaves entre os objetos, proporcionando uma experiência imersiva. Durante o tour, a velocidade de simulação é reduzida para permitir melhor visualização dos detalhes.
+
+### [15/03/2024] - [Chuvas de Meteoros]
+**Descrição:** Implementado sistema de simulação de chuvas de meteoros e eventos astronômicos.
+**Arquivos modificados:** js/modules/core/meteor-showers.js, js/app.js, styles.css
+**Observações:** O sistema de chuvas de meteoros permite visualizar as principais chuvas de meteoros que ocorrem durante o ano, como as Perseidas e Leônidas. Cada chuva possui características realistas, incluindo taxa de meteoros, cor, velocidade e ponto radiante específico. Os meteoros são renderizados com caudas utilizando sistemas de partículas para criar efeitos visuais impressionantes. A interface inclui um painel de eventos que mostra as próximas chuvas de meteoros, com opções para iniciar uma chuva específica ou meteoros aleatórios. O sistema está integrado ao ciclo de animação principal, permitindo a visualização dos meteoros em tempo real dentro do contexto do Sistema Solar.
+
+### [15/03/2024] - [Nuvem de Oort e Cometas]
+**Descrição:** Implementação da Nuvem de Oort e sistema de cometas de período longo
+**Arquivos modificados:** js/app.js, js/modules/core/oort-cloud.js, js/modules/core/comets.js, js/modules/ui/oort-cloud-controls.js
+**Observações:** Visualização da região mais externa do Sistema Solar e simulação de cometas com órbitas de longo período, incluindo efeitos visuais realistas de caudas de cometas
+
+### [15/03/2024] - [Ferramenta de Medição]
+**Descrição:** Ferramenta para medir distâncias entre corpos celestes
+**Arquivos modificados:** js/app.js, js/modules/ui/measurement-tool.js
+**Observações:** Oferece uma interface intuitiva para medir a distância entre quaisquer dois objetos no Sistema Solar, exibindo os resultados em unidades astronômicas (UA) e quilômetros (km). Inclui informações educativas como tempo de viagem da luz e tempo estimado de sondas espaciais para percorrer as distâncias medidas, facilitando a compreensão das escalas astronômicas.
+
 ---
 
 ## Prioridades para Próxima Iteração
 
-1. Implementar o Cinturão de Kuiper completo com distribuição realista de objetos
-2. Adicionar chuvas de meteoros e eventos astronômicos
-3. Implementar o tour guiado pelo sistema solar 
+1. Implementar a Nuvem de Oort com cometas de longo período
+2. Criar ferramenta de medição para distâncias entre corpos celestes
+3. Adicionar simulador de missões espaciais
+4. Implementar modo VR para experiência imersiva
+5. Expandir o sistema para incluir exoplanetas conhecidos 
+
+# Melhorias Implementadas e Planejadas
+
+## Implementadas
+
+### Captura de Screenshots
+- **Descrição**: Funcionalidade para capturar screenshots da simulação
+- **Arquivos Modificados**: 
+  - `js/app.js` - Adição da função de captura
+  - `js/modules/ui/screenshot.js` - Criação do módulo de screenshot
+- **Observações**: Permite salvar imagens da simulação em diferentes resoluções
+
+### Modo Noturno
+- **Descrição**: Sistema completo de modo noturno com filtro de luz azul ajustável
+- **Arquivos Modificados**:
+  - `js/app.js` - Integração do modo noturno
+  - `js/modules/ui/night-mode.js` - Criação do módulo de modo noturno
+  - `css/style.css` - Adição de estilos para o modo noturno
+- **Observações**: Reduz o cansaço visual para uso noturno
+
+### Sistema de Busca
+- **Descrição**: Sistema para buscar objetos do sistema solar
+- **Arquivos Modificados**:
+  - `js/app.js` - Integração do sistema de busca
+  - `js/modules/ui/search-system.js` - Criação do módulo de busca
+- **Observações**: Facilita a localização de corpos celestes na simulação
+
+### Comparação de Planetas
+- **Descrição**: Sistema para comparar características de corpos celestes
+- **Arquivos Modificados**:
+  - `js/app.js` - Integração do sistema de comparação
+  - `js/modules/ui/planet-comparison.js` - Criação do módulo de comparação
+- **Observações**: Permite análise visual e de dados entre planetas
+
+### Gravidade Real
+- **Descrição**: Sistema avançado de física simulando gravidade real
+- **Arquivos Modificados**:
+  - `js/app.js` - Integração do sistema de física
+  - `js/modules/physics/gravity-system.js` - Criação do módulo de física
+- **Observações**: Movimentos orbitais precisos baseados em cálculos gravitacionais
+
+### Implementação do Cinturão de Kuiper
+- **Descrição**: Adição de objetos do Cinturão de Kuiper
+- **Arquivos Modificados**:
+  - `js/celestial-bodies.js` - Adição de objetos do Cinturão de Kuiper
+  - `js/modules/core/kuiper-belt.js` - Criação do sistema do Cinturão de Kuiper
+- **Observações**: Expande o sistema para incluir objetos transneptunianos
+
+### Efeitos Atmosféricos
+- **Descrição**: Adição de efeitos atmosféricos nos planetas
+- **Arquivos Modificados**:
+  - `js/celestial-bodies.js` - Adição de propriedades atmosféricas
+  - `js/modules/effects/atmosphere.js` - Criação do sistema de atmosfera
+- **Observações**: Visuais mais realistas para planetas com atmosfera
+
+### Anéis Planetários Expandidos
+- **Descrição**: Anéis para Urano e Netuno
+- **Arquivos Modificados**:
+  - `js/celestial-bodies.js` - Atualização dos dados de Urano e Netuno
+  - `js/modules/effects/planetary-rings.js` - Expansão do sistema de anéis
+- **Observações**: Maior precisão na representação dos anéis dos planetas gigantes
+
+### Sistema de Colisões
+- **Descrição**: Detecção e resposta a colisões
+- **Arquivos Modificados**:
+  - `js/app.js` - Integração do sistema de colisões
+  - `js/modules/physics/collision-system.js` - Criação do sistema de colisões
+- **Observações**: Permite simulações de impactos e seus efeitos
+
+### Padrões Climáticos
+- **Descrição**: Padrões climáticos para planetas com atmosfera
+- **Arquivos Modificados**:
+  - `js/modules/effects/climate-patterns.js` - Criação do sistema climático
+  - `js/celestial-bodies.js` - Adição de propriedades climáticas
+- **Observações**: Simulações dinâmicas de clima nos planetas
+
+### Iluminação Realista
+- **Descrição**: Sistema de iluminação com sombras e oclusão
+- **Arquivos Modificados**:
+  - `js/app.js` - Melhoria do sistema de iluminação
+  - `js/modules/effects/lighting-system.js` - Criação do sistema de iluminação avançada
+- **Observações**: Representação mais precisa da iluminação solar
+
+### Tour Guiado pelo Sistema Solar
+- **Descrição**: Sistema interativo de tour guiado explorando corpos celestes
+- **Arquivos Modificados**:
+  - `js/app.js` - Integração do sistema de tour
+  - `js/modules/ui/tour-guide.js` - Criação do módulo de tour
+- **Observações**: Experiência educativa com descrições detalhadas
+
+### Chuvas de Meteoros
+- **Descrição**: Simulação de chuvas de meteoros e eventos astronômicos
+- **Arquivos Modificados**: 
+  - `js/app.js` - Integração do sistema de meteoros
+  - `js/modules/core/meteor-showers.js` - Criação do módulo de meteoros
+- **Observações**: Visualização de eventos astronômicos reais com dados precisos
+
+### Nuvem de Oort e Cometas
+- **Descrição**: Implementação da Nuvem de Oort e sistema de cometas de período longo
+- **Arquivos Modificados**:
+  - `js/app.js` - Integração da Nuvem de Oort e cometas
+  - `js/modules/core/oort-cloud.js` - Criação do módulo da Nuvem de Oort
+  - `js/modules/core/comets.js` - Criação do sistema de cometas
+  - `js/modules/ui/oort-cloud-controls.js` - Interface para controle da Nuvem de Oort
+- **Observações**: Visualização da região mais externa do Sistema Solar e simulação de cometas com órbitas de longo período, incluindo efeitos visuais realistas de caudas de cometas
+
+### Ferramenta de Medição
+- **Descrição**: Ferramenta para medir distâncias entre corpos celestes
+- **Arquivos Modificados**:
+  - `js/app.js` - Integração da ferramenta de medição
+  - `js/modules/ui/measurement-tool.js` - Criação do módulo de medição
+- **Observações**: Oferece uma interface intuitiva para medir a distância entre quaisquer dois objetos no Sistema Solar, exibindo os resultados em unidades astronômicas (UA) e quilômetros (km). Inclui informações educativas como tempo de viagem da luz e tempo estimado de sondas espaciais para percorrer as distâncias medidas, facilitando a compreensão das escalas astronômicas.
+
+## Planejadas para Próximas Versões
+
+### Simulador de Missões Espaciais
+- **Descrição**: Simulação de trajetórias de missões espaciais históricas e planejadas
+- **Prioridade**: Alta
+- **Observações**: Conteúdo educativo sobre exploração espacial
+
+### Modo VR
+- **Descrição**: Suporte para dispositivos de realidade virtual
+- **Prioridade**: Média
+- **Observações**: Experiência imersiva de exploração espacial
+
+### Exoplanetas
+- **Descrição**: Adição de sistemas de exoplanetas conhecidos
+- **Prioridade**: Baixa
+- **Observações**: Expandir além do Sistema Solar 

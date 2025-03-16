@@ -1,0 +1,56 @@
+/* Estilos para o painel de controle principal */
+.control-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    max-height: 90vh;
+    width: 280px;
+    background-color: rgba(15, 25, 35, 0.85);
+    border-radius: 8px;
+    padding: 15px;
+    color: white;
+    font-family: Arial, sans-serif;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    overflow-y: auto;
+    z-index: 100;
+    backdrop-filter: blur(5px);
+}
+
+.controls-section {
+    border: 1px solid rgba(100, 150, 255, 0.3);
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
+.controls-section legend {
+    padding: 0 5px;
+    font-weight: bold;
+    color: #4fc3f7;
+}
+
+.control-item {
+    margin: 8px 0;
+    display: block;
+}
+
+.control-button {
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    margin: 5px 0;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.control-button:hover {
+    background-color: #1565c0;
+}
+
+.slider {
+    width: 100%;
+    margin: 8px 0;
+} 

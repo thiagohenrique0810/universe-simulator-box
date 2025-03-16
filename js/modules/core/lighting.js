@@ -406,7 +406,7 @@ function detectEclipses(sol, planets, settings) {
     
     // Se houver eclipses, registrar no console
     if (currentEclipses.solar.length > 0 || currentEclipses.lunar.length > 0) {
-        console.log('Eclipses detectados:', currentEclipses);
+        //console.log('Eclipses detectados:', currentEclipses);
     }
 }
 

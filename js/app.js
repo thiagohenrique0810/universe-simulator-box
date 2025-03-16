@@ -44,12 +44,17 @@ import {
     updateLighting,
     setupObjectForShadows
 } from './modules/core/lighting.js';
+import { initMeteorShowers, updateMeteorShowers } from './modules/core/meteor-showers.js';
 
 // Importação dos módulos de UI
 import { setupPlanetSelection, updateCameraFocus, setComparisonMode } from './modules/ui/planet-selection.js';
 import { createInfoPanel, showPlanetInfo, showMoonInfo, showDwarfPlanetInfo, showKuiperObjectInfo } from './modules/ui/info-panel.js';
 import { createSimulationControls, getSimulationSpeed } from './modules/ui/simulation-controls.js';
 import { initPlanetComparison } from './modules/ui/planet-comparison.js';
+import { initTourGuide } from './modules/ui/tour-guide.js';
+import { initOortCloud, updateOortCloud } from './modules/core/oort-cloud.js';
+import { initOortCloudControls } from './modules/ui/oort-cloud-controls.js';
+import { initMeasurementTool } from './modules/ui/measurement-tool.js';
 
 // Importação do módulo de áudio
 import { setupBackgroundMusic } from './modules/audio/background-music.js';
@@ -62,6 +67,7 @@ import { applyAtmosphericEffect, removeAtmosphericEffect, toggleAtmosphericEffec
 
 // Variáveis globais da aplicação
 let scene, camera, renderer, controls;
+let stats, gui;
 let planets = {};
 let frameCount = 0;
 let asteroidBelt, beltRing, stars, skybox;
@@ -69,6 +75,10 @@ let lastTime = 0;
 let collisionSystem; // Sistema de colisões
 let climateInitialized = false; // Controle para o sistema climático
 let lightingSystem; // Sistema de iluminação realista
+let meteorSystem;
+let tourGuideSystem;
+let oortCloudSystem;
+let measurementTool;
 
 /**
  * Inicializa o sistema solar
@@ -229,6 +239,32 @@ function init() {
     console.log('Configurando sistema de comparação de planetas...');
     initPlanetComparison();
     
+    // Inicializar sistema de tour guiado
+    console.log('Configurando sistema de tour guiado...');
+    tourGuideSystem = initTourGuide(scene, camera, controls, planets, {
+        positionCamera: (position, target) => {
+            gsap.to(camera.position, {
+                duration: 2,
+                x: position.x,
+                y: position.y, 
+                z: position.z,
+                onUpdate: () => {
+                    controls.target.copy(target);
+                }
+            });
+        }
+    });
+    
+    // Inicializar sistema de chuvas de meteoros
+    console.log('Configurando sistema de chuvas de meteoros...');
+    meteorSystem = initMeteorShowers(scene, {
+        sunPosition: new THREE.Vector3(0, 0, 0),
+        planets: planets
+    });
+    
+    // Expor função para acesso global (necessário para os botões no painel de eventos)
+    window.meteorSystem = meteorSystem;
+    
     // Configurar evento para atualização do modo de comparação
     document.addEventListener('comparison-mode-changed', function(event) {
         const isActive = event.detail.active;
@@ -240,6 +276,28 @@ function init() {
     
     // Configurar eventos dos controles
     setupControlEvents();
+    
+    // Criar o painel de controle principal se não existir
+    if (!document.querySelector('.control-panel')) {
+        console.log('Criando painel de controle principal...');
+        const controlPanel = document.createElement('div');
+        controlPanel.className = 'control-panel';
+        document.body.appendChild(controlPanel);
+    }
+    
+    // Iniciar a Nuvem de Oort
+    console.log('Inicializando a Nuvem de Oort e sistema de cometas...');
+    oortCloudSystem = initOortCloud(scene, {
+        radius: 10000,
+        sun: planets.sol
+    });
+    
+    // Inicializar controles da Nuvem de Oort
+    initOortCloudControls(oortCloudSystem);
+    
+    // Inicializar a ferramenta de medição
+    console.log('Inicializando a ferramenta de medição de distâncias...');
+    measurementTool = initMeasurementTool(scene, camera, controls, planets);
     
     // Iniciar a animação
     animate();
@@ -502,6 +560,9 @@ function animate(timestamp) {
     // Atualizar cinturão de asteroides
     updateAsteroidBelt(simulationSpeed);
     
+    // Atualizar chuvas de meteoros
+    updateMeteorShowers(simulationSpeed * deltaTime);
+    
     // Atualizar sistema climático, se inicializado
     if (climateInitialized) {
         updateClimateSystems(deltaTime, simulationSpeed);
@@ -520,8 +581,23 @@ function animate(timestamp) {
     // Atualizar o foco da câmera em um objeto selecionado
     updateCameraFocus();
     
+    // Atualizar a ferramenta de medição (se necessário)
+    if (measurementTool && measurementTool.isActive()) {
+        measurementTool.updateMeasurementVisuals();
+    }
+    
     // Incrementar contador de frames
     frameCount++;
+    
+    // Atualizar a Nuvem de Oort
+    if (oortCloudSystem) {
+        updateOortCloud(oortCloudSystem, deltaTime, getSimulationSpeed());
+    }
+    
+    // Atualizar sistema de meteoros
+    if (meteorSystem) {
+        updateMeteorShowers(meteorSystem);
+    }
     
     // Renderizar a cena
     renderScene();
