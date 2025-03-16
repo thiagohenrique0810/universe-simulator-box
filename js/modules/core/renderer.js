@@ -31,6 +31,12 @@ export function initRenderer() {
     controls.dampingFactor = 0.05;
     controls.maxDistance = 1000;
     
+    // Expor os controles globalmente para acesso de outros módulos
+    window.orbitControls = controls;
+    
+    // Armazenar uma referência para os controles na câmera para facilitar acesso
+    camera.userData.controls = controls;
+    
     // Adicionar iluminação ambiente
     const ambientLight = new THREE.AmbientLight(0x333333);
     scene.add(ambientLight);

@@ -16,23 +16,49 @@ let planets = {};
  */
 export function createCelestialBodies(scene, PLANET_DATA) {
     // Texturas temporárias até baixarmos as reais
-    const defaultTextureLoader = new THREE.TextureLoader();
+    const textureLoader = new THREE.TextureLoader();
     
     // Criar o Sol
     const solGeometry = new THREE.SphereGeometry(PLANET_DATA.sol.radius, 32, 32);
+    
+    // Material mais realista para o sol com brilho próprio
     const solMaterial = new THREE.MeshBasicMaterial({
-        color: 0xffff00,
-        emissive: 0xffff00,
+        color: 0xffdd33,
+        emissive: 0xffdd33,
         emissiveIntensity: 1
     });
     
+    // Tentar carregar a textura do sol
+    textureLoader.load(
+        PLANET_DATA.sol.textureUrl,
+        function(texture) {
+            solMaterial.map = texture;
+            solMaterial.needsUpdate = true;
+        },
+        undefined,
+        function(err) {
+            console.log('Usando material básico para o Sol devido a erro na textura:', err);
+            // Já estamos usando um material básico como fallback
+        }
+    );
+    
     const sol = new THREE.Mesh(solGeometry, solMaterial);
+    sol.name = "sol";
     scene.add(sol);
     planets.sol = sol;
     
+    // Adicionar dados para rotação do sol
+    sol.userData = {
+        rotationSpeed: PLANET_DATA.sol.rotationSpeed || 0.004,
+        radius: PLANET_DATA.sol.radius
+    };
+    
     // Criar uma luz no sol
-    const solLight = new THREE.PointLight(0xffffff, 1.5, 300);
+    const solLight = new THREE.PointLight(0xffffcc, 1.5, 300);
     sol.add(solLight);
+    
+    // Adicionar glow ao redor do sol
+    createSunGlow(sol, scene);
     
     // Para garantir consistência, usamos um ângulo fixo para cada planeta
     // em vez de ângulos aleatórios
@@ -77,6 +103,7 @@ export function createCelestialBodies(scene, PLANET_DATA) {
         });
         
         const planet = new THREE.Mesh(planetGeometry, planetMaterial);
+        planet.name = planetName;
         
         // Usar um ângulo fixo para cada planeta
         const angle = planetInitialAngles[planetName] || Math.random() * Math.PI * 2;
@@ -84,41 +111,25 @@ export function createCelestialBodies(scene, PLANET_DATA) {
         // Criar a órbita visual e obter seus parâmetros
         const orbitParams = createPlanetOrbit(scene, planetName, planetData);
         
-        // Inicializar a userdata do planeta, incluindo o ângulo inicial
-        planet.userData = {
-            angle: angle,
-            orbitalSpeed: planetData.orbitalSpeed,
-            rotationSpeed: planetData.rotationSpeed,
-            distance: planetData.distance
-        };
+        // Posicionar o planeta
+        planet.position.x = Math.cos(angle) * planetData.distance;
+        planet.position.z = Math.sin(angle) * planetData.distance;
         
-        // Se a órbita for elíptica, adicionar os parâmetros específicos
-        if (orbitParams) {
-            planet.userData.a = orbitParams.a;
-            planet.userData.b = orbitParams.b;
-            planet.userData.c = orbitParams.c;
-            planet.userData.inclination = orbitParams.inclination;
-            
-            // Calcular a posição inicial baseada nos mesmos parâmetros da órbita
-            const x = orbitParams.a * Math.cos(angle) - orbitParams.c;
-            const z = orbitParams.b * Math.sin(angle);
-            
-            if (orbitParams.inclination) {
-                const inclRad = THREE.MathUtils.degToRad(orbitParams.inclination);
-                const y = z * Math.sin(inclRad);
-                const newZ = z * Math.cos(inclRad);
-                planet.position.set(x, y, newZ);
-            } else {
-                planet.position.set(x, 0, z);
-            }
-        } else {
-            // Posicionamento circular padrão
-            planet.position.x = Math.cos(angle) * planetData.distance;
-            planet.position.z = Math.sin(angle) * planetData.distance;
+        // Inclinação do planeta (se definida)
+        if (planetData.inclination) {
+            planet.rotation.x = THREE.MathUtils.degToRad(planetData.inclination);
         }
         
-        // Definir nome do objeto para seleção
-        planet.name = planetName;
+        // Adicionar dados para a rotação e a órbita
+        planet.userData = {
+            angle: angle,
+            distance: planetData.distance,
+            rotationSpeed: planetData.rotationSpeed || 0.01,
+            orbitalSpeed: planetData.orbitalSpeed || 0.005,
+            semiMajorAxis: planetData.semiMajorAxis || planetData.distance,
+            eccentricity: planetData.eccentricity || 0,
+            radius: planetData.radius
+        };
         
         scene.add(planet);
         planets[planetName] = planet;
@@ -265,6 +276,7 @@ function createMoon(planet, satellite) {
     });
     
     const moon = new THREE.Mesh(moonGeometry, moonMaterial);
+    moon.name = satellite.name;
     
     // Posicionar a lua
     const moonAngle = Math.random() * Math.PI * 2;
@@ -288,7 +300,10 @@ function createMoon(planet, satellite) {
             c: c,
             orbitalSpeed: satellite.orbitalSpeed,
             rotationSpeed: satellite.rotationSpeed,
-            isElliptical: true
+            isElliptical: true,
+            eccentricity: satellite.eccentricity,
+            semiMajorAxis: a,
+            radius: satellite.radius
         };
         
         // Criar uma órbita visual para a lua
@@ -302,15 +317,26 @@ function createMoon(planet, satellite) {
             angle: moonAngle,
             distance: satellite.distance,
             orbitalSpeed: satellite.orbitalSpeed,
-            rotationSpeed: satellite.rotationSpeed
+            rotationSpeed: satellite.rotationSpeed,
+            eccentricity: 0,
+            semiMajorAxis: satellite.distance,
+            radius: satellite.radius
         };
         
         // Criar órbita visual para lua com órbita circular
         createMoonOrbitCircular(planet, satellite.distance);
     }
     
-    // Definir nome da lua
-    moon.name = satellite.name;
+    // Dados para animação da lua
+    moon.userData = {
+        angle: Math.random() * Math.PI * 2,
+        distance: satellite.distance,
+        rotationSpeed: satellite.rotationSpeed,
+        orbitalSpeed: satellite.orbitalSpeed,
+        eccentricity: satellite.eccentricity || 0,
+        semiMajorAxis: satellite.distance,
+        radius: satellite.radius
+    };
     
     planet.add(moon);
 }
@@ -382,4 +408,67 @@ function loadTextures(PLANET_DATA) {
  */
 export function getPlanets() {
     return planets;
+}
+
+/**
+ * Cria efeito de glow ao redor do sol
+ * @param {Object} sol - Objeto do sol
+ * @param {Object} scene - Cena Three.js
+ */
+function createSunGlow(sol, scene) {
+    // Criar geometria para o glow (esfera um pouco maior que o sol)
+    const glowRadius = sol.geometry.parameters.radius * 1.2;
+    const glowGeometry = new THREE.SphereGeometry(glowRadius, 32, 32);
+    
+    // Material para o glow (transparente e com cor de fogo)
+    const glowMaterial = new THREE.MeshBasicMaterial({
+        color: 0xffdd33,
+        transparent: true,
+        opacity: 0.15,
+        side: THREE.BackSide // Para renderizar apenas a parte de trás da esfera
+    });
+    
+    // Criar o mesh de glow
+    const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+    
+    // Adicionar o glow à cena (não ao sol para evitar herança de transformações)
+    scene.add(glow);
+    
+    // Segundo glow para efeito de coroa solar
+    const coronaRadius = sol.geometry.parameters.radius * 1.5;
+    const coronaGeometry = new THREE.SphereGeometry(coronaRadius, 32, 32);
+    const coronaMaterial = new THREE.MeshBasicMaterial({
+        color: 0xff8800,
+        transparent: true,
+        opacity: 0.07,
+        side: THREE.BackSide
+    });
+    const corona = new THREE.Mesh(coronaGeometry, coronaMaterial);
+    scene.add(corona);
+    
+    // Função para atualizar a posição do glow
+    let time = 0;
+    
+    sol.userData.updateGlow = function() {
+        // Atualizar posição do glow
+        glow.position.copy(sol.position);
+        
+        // Rotacionar o sol lentamente
+        sol.rotation.y += sol.userData.rotationSpeed * 0.5;
+        
+        // Atualizar o tempo para animar o glow
+        time += 0.01;
+        
+        // Variar sutilmente o tamanho do glow para simular a atividade solar
+        const pulseFactor = 1 + 0.05 * Math.sin(time);
+        glow.scale.set(pulseFactor, pulseFactor, pulseFactor);
+        
+        // Atualizar a coroa solar
+        corona.position.copy(sol.position);
+        const coronaPulseFactor = 1 + 0.08 * Math.cos(time * 0.8);
+        corona.scale.set(coronaPulseFactor, coronaPulseFactor, coronaPulseFactor);
+    };
+    
+    // Chamar a função inicialmente
+    sol.userData.updateGlow();
 } 

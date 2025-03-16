@@ -89,6 +89,14 @@ function init() {
     
     // Iniciar a animação
     animate();
+    
+    // Exibir mensagem de ajuda sobre duplo clique
+    const infoElement = document.getElementById('info');
+    if (infoElement) {
+        const helpText = document.createElement('p');
+        helpText.textContent = 'Dê um clique duplo em qualquer objeto para focar a câmera nele';
+        infoElement.appendChild(helpText);
+    }
 }
 
 /**
@@ -126,6 +134,11 @@ function animate() {
     
     // Atualizar cinturão de asteroides
     updateAsteroidBelt(simulationSpeed);
+    
+    // Atualizar efeito de glow do sol, se existir
+    if (planets.sol && planets.sol.userData && planets.sol.userData.updateGlow) {
+        planets.sol.userData.updateGlow();
+    }
     
     // Não verificamos mais órbitas a cada frame ou em intervalos
     // A validação é feita apenas na inicialização

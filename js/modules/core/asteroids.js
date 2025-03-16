@@ -20,24 +20,59 @@ export function createAsteroidBelt(scene) {
     
     // Criar um grupo para armazenar todos os asteroides
     asteroidBelt = new THREE.Group();
+    asteroidBelt.name = "cinturaoAsteroides";
     
-    // Geometria básica para os asteroides (esfera pequena)
-    const asteroidGeometry = new THREE.SphereGeometry(0.08, 4, 4);
+    // Carregar a textura do asteroide
+    const textureLoader = new THREE.TextureLoader();
+    const asteroidTexture = textureLoader.load('textures/asteroid.avif');
     
-    // Materiais para os asteroides (variação de cores)
-    const asteroidMaterials = [
-        new THREE.MeshStandardMaterial({ color: 0x8B8B8B, roughness: 0.8 }), // Cinza
-        new THREE.MeshStandardMaterial({ color: 0x8B7355, roughness: 0.9 }), // Marrom
-        new THREE.MeshStandardMaterial({ color: 0x696969, roughness: 0.7 })  // Cinza escuro
-    ];
+    // Material base para os asteroides com a textura carregada
+    const asteroidMaterial = new THREE.MeshStandardMaterial({ 
+        map: asteroidTexture,
+        roughness: 0.8,
+        metalness: 0.2,
+        bumpScale: 0.02,
+        side: THREE.DoubleSide // Renderiza ambos os lados das faces
+    });
+    
+    // Função para criar geometria de asteroide deformada
+    function createAsteroidGeometry(baseRadius) {
+        // Usamos um octaedro com mais subdivisões para maior solidez
+        const geometry = new THREE.OctahedronGeometry(baseRadius, 2);
+        
+        // Obter os vértices da geometria para deformação
+        const positions = geometry.attributes.position;
+        
+        // Aplicar deformações aleatórias aos vértices
+        for (let i = 0; i < positions.count; i++) {
+            // Vetores para manipular as posições
+            const vertex = new THREE.Vector3();
+            vertex.fromBufferAttribute(positions, i);
+            
+            // Fator de deformação aleatório (entre 0.7 e 1.3) - menor deformação para evitar buracos
+            const deformFactor = 0.7 + Math.random() * 0.6;
+            
+            // Aplicar deformação
+            vertex.multiplyScalar(deformFactor);
+            
+            // Inserir de volta no buffer de posições
+            positions.setXYZ(i, vertex.x, vertex.y, vertex.z);
+        }
+        
+        // Atualizar as normais da geometria após a deformação
+        geometry.computeVertexNormals();
+        
+        return geometry;
+    }
     
     // Criar cada asteroide
     for (let i = 0; i < numAsteroids; i++) {
-        // Selecionar material aleatório
-        const material = asteroidMaterials[Math.floor(Math.random() * asteroidMaterials.length)];
+        // Criar geometria deformada para este asteroide específico
+        const asteroidGeometry = createAsteroidGeometry(0.03);
         
-        // Criar o asteroid
-        const asteroid = new THREE.Mesh(asteroidGeometry, material);
+        // Criar o asteroide com o material de textura
+        const asteroid = new THREE.Mesh(asteroidGeometry, asteroidMaterial.clone());
+        asteroid.name = `asteroide_${i}`;
         
         // Posicionar aleatoriamente no cinturão
         const distance = beltInnerRadius + Math.random() * (beltOuterRadius - beltInnerRadius);
@@ -51,14 +86,26 @@ export function createAsteroidBelt(scene) {
         asteroid.position.z = Math.sin(angle) * distance;
         asteroid.position.y = height;
         
-        // Escala aleatória para variar tamanho
-        const scale = 0.5 + Math.random() * 1.5;
+        // Escala aleatória para variar tamanho (reduzida ainda mais)
+        const scale = 0.1 + Math.random() * 0.6;
         asteroid.scale.set(scale, scale, scale);
         
-        // Rotação aleatória
-        asteroid.rotation.x = Math.random() * Math.PI;
-        asteroid.rotation.y = Math.random() * Math.PI;
-        asteroid.rotation.z = Math.random() * Math.PI;
+        // Deformação adicional pela escala em um eixo
+        const stretchAxis = Math.floor(Math.random() * 3); // 0, 1 ou 2 (x, y, z)
+        const stretchFactor = 0.75 + Math.random() * 0.5;
+        
+        if (stretchAxis === 0) {
+            asteroid.scale.x *= stretchFactor;
+        } else if (stretchAxis === 1) {
+            asteroid.scale.y *= stretchFactor;
+        } else {
+            asteroid.scale.z *= stretchFactor;
+        }
+        
+        // Rotação aleatória mais interessante
+        asteroid.rotation.x = Math.random() * Math.PI * 2;
+        asteroid.rotation.y = Math.random() * Math.PI * 2;
+        asteroid.rotation.z = Math.random() * Math.PI * 2;
         
         // Dados para animação
         asteroid.userData = {
@@ -66,7 +113,8 @@ export function createAsteroidBelt(scene) {
             distance: distance,
             height: height,
             rotationSpeed: 0.005 + Math.random() * 0.01,
-            orbitalSpeed: 0.0005 + Math.random() * 0.001
+            orbitalSpeed: 0.0005 + Math.random() * 0.001,
+            radius: 0.03 * scale // Armazenar o raio escalado para referência
         };
         
         // Adicionar ao grupo
@@ -87,6 +135,7 @@ export function createAsteroidBelt(scene) {
     
     beltRing = new THREE.Mesh(beltRingGeometry, beltRingMaterial);
     beltRing.rotation.x = Math.PI / 2;
+    beltRing.name = "anelCinturao";
     scene.add(beltRing);
     
     return { asteroidBelt, beltRing };

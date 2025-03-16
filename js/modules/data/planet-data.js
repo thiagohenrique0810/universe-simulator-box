@@ -4,7 +4,7 @@
  */
 export const PLANET_DATA = {
     sol: {
-        radius: 3.5,
+        radius: 2.2,
         textureUrl: 'textures/sun.jpg',
         distance: 0,
         orbitalSpeed: 0,
