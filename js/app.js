@@ -26,7 +26,7 @@ import {
 import { createStars, toggleStarsVisibility } from './modules/core/stars.js';
 
 // Importação dos módulos de UI
-import { setupPlanetSelection } from './modules/ui/planet-selection.js';
+import { setupPlanetSelection, updateCameraFocus } from './modules/ui/planet-selection.js';
 import { createInfoPanel, showPlanetInfo } from './modules/ui/info-panel.js';
 import { createSimulationControls, getSimulationSpeed } from './modules/ui/simulation-controls.js';
 
@@ -139,6 +139,9 @@ function animate() {
     if (planets.sol && planets.sol.userData && planets.sol.userData.updateGlow) {
         planets.sol.userData.updateGlow();
     }
+    
+    // Atualizar o foco da câmera em um objeto selecionado
+    updateCameraFocus();
     
     // Não verificamos mais órbitas a cada frame ou em intervalos
     // A validação é feita apenas na inicialização

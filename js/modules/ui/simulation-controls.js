@@ -4,7 +4,7 @@
  */
 
 // Variáveis para controle da simulação
-let simulationSpeed = 1.0; // Velocidade padrão da simulação
+let simulationSpeed = 0.1; // Velocidade inicial da simulação ajustada para 0.1
 
 // Variáveis para controle de visibilidade
 let orbitLinesVisible = true;

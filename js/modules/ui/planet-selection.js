@@ -7,6 +7,8 @@
 let selectedPlanet = null;
 let selectedObject = null;
 let controlsTarget = null;
+let cameraFocusEnabled = false;
+let initialCameraDistance = 0; // Distância inicial entre a câmera e o objeto focado
 
 /**
  * Configura o sistema de seleção de planetas
@@ -77,6 +79,11 @@ export function setupPlanetSelection(scene, camera, showInfoCallback) {
                 // Tratar duplo clique para focar no objeto
                 if (isDoubleClick && foundObject) {
                     focusOnObject(foundObject, camera);
+                    cameraFocusEnabled = true; // Ativar o acompanhamento contínuo
+                } else if (isDoubleClick && !foundObject) {
+                    // Se deu duplo clique no vazio, desativar o foco
+                    cameraFocusEnabled = false;
+                    selectedObject = null;
                 }
                 
                 // Mostrar informações do planeta encontrado (apenas para clique normal)
@@ -97,11 +104,20 @@ export function setupPlanetSelection(scene, camera, showInfoCallback) {
                         infoPanel.style.display = 'none';
                     }
                     selectedPlanet = null;
-                    selectedObject = null;
+                    // Não resetamos selectedObject para manter o foco da câmera
                 }
             }
         } catch (error) {
             console.error('Erro no processamento do clique:', error);
+        }
+    });
+    
+    // Adicionar opção para desligar o foco via tecla Esc
+    window.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            cameraFocusEnabled = false;
+            selectedObject = null;
+            console.log('Foco da câmera desativado');
         }
     });
 }
@@ -131,10 +147,53 @@ function focusOnObject(object, camera) {
     // Isso mantém a câmera em sua posição atual, mas faz com que olhe para o objeto
     controls.target.copy(targetPosition);
     
+    // Calcular e armazenar a distância inicial entre a câmera e o objeto
+    initialCameraDistance = camera.position.distanceTo(targetPosition);
+    console.log(`Distância inicial da câmera ao objeto: ${initialCameraDistance.toFixed(2)}`);
+    
     // Atualizar controles
     controls.update();
     
     console.log(`Câmera focada no objeto: ${object.name || 'sem nome'}`);
+}
+
+/**
+ * Atualiza o foco da câmera se estiver seguindo um objeto
+ * Esta função deve ser chamada a cada frame da animação
+ */
+export function updateCameraFocus() {
+    if (!cameraFocusEnabled || !selectedObject) return;
+    
+    const controls = window.orbitControls;
+    if (!controls) return;
+    
+    // Obter a câmera vinculada aos controles
+    const camera = controls.object;
+    if (!camera) return;
+    
+    // Calcular a posição atual do objeto no mundo
+    const targetPosition = new THREE.Vector3();
+    selectedObject.getWorldPosition(targetPosition);
+    
+    // Capturar a distância atual entre câmera e objeto antes de atualizar
+    const currentDistance = camera.position.distanceTo(targetPosition);
+    
+    // Atualizar o alvo dos controles para acompanhar o objeto em movimento
+    controls.target.copy(targetPosition);
+    
+    // Calcular a direção da câmera para o alvo
+    const directionToTarget = new THREE.Vector3().subVectors(camera.position, targetPosition).normalize();
+    
+    // Calcular a nova posição da câmera mantendo a distância atual
+    const newCameraPosition = new THREE.Vector3().copy(targetPosition).add(
+        directionToTarget.multiplyScalar(currentDistance)
+    );
+    
+    // Atualizar a posição da câmera
+    camera.position.copy(newCameraPosition);
+    
+    // Atualizar os controles
+    controls.update();
 }
 
 /**
@@ -159,4 +218,12 @@ export function setSelectedPlanet(planetName) {
  */
 export function getSelectedObject() {
     return selectedObject;
+}
+
+/**
+ * Verifica se o foco da câmera está ativado
+ * @returns {Boolean} Estado do foco da câmera
+ */
+export function isCameraFocusEnabled() {
+    return cameraFocusEnabled;
 } 

@@ -174,6 +174,30 @@ function createSaturnRings(planet, planetData) {
         ringSegments
     );
     
+    // Modificar o mapeamento UV da geometria para corrigir a orientação da textura
+    const pos = ringGeometry.attributes.position;
+    const uv = ringGeometry.attributes.uv;
+    
+    for (let i = 0; i < uv.count; i++) {
+        const u = uv.getX(i);
+        const v = uv.getY(i);
+        
+        // Inverter as coordenadas U para que a textura seja circular e não radial
+        // Usar posição X,Z para calcular o ângulo theta
+        const x = pos.getX(i);
+        const z = pos.getZ(i);
+        const theta = Math.atan2(z, x);
+        
+        // Normalizar theta de -PI a PI para 0 a 1
+        const newU = (theta + Math.PI) / (Math.PI * 2);
+        
+        // Garantir transição suave no ponto de emenda (0/1)
+        uv.setXY(i, newU, v);
+    }
+    
+    // Indicar que as coordenadas UV foram modificadas
+    uv.needsUpdate = true;
+    
     // Criar textura de ruído para simular divisões e variações nos anéis
     const ringCanvas = document.createElement('canvas');
     ringCanvas.width = 1024;
@@ -215,7 +239,7 @@ function createSaturnRings(planet, planetData) {
     // Criar textura a partir do canvas
     const ringTexture = new THREE.CanvasTexture(ringCanvas);
     ringTexture.wrapS = THREE.RepeatWrapping;
-    ringTexture.repeat.x = 3;
+    ringTexture.repeat.x = 5; // Aumentar repetição para maior detalhamento circular
     
     // Material para os anéis
     const ringMaterial = new THREE.MeshBasicMaterial({
@@ -227,6 +251,7 @@ function createSaturnRings(planet, planetData) {
     
     const ring = new THREE.Mesh(ringGeometry, ringMaterial);
     ring.rotation.x = Math.PI / 2;
+    ring.name = "aneisSaturno";
     
     // Adicionar pequena rotação para criar inclinação nos anéis
     ring.rotation.z = THREE.MathUtils.degToRad(5);
@@ -239,6 +264,21 @@ function createSaturnRings(planet, planetData) {
         ringOuterRadius,
         ringSegments
     );
+    
+    // Aplicar o mesmo mapeamento UV na geometria da sombra
+    const shadowPos = shadowRingGeometry.attributes.position;
+    const shadowUv = shadowRingGeometry.attributes.uv;
+    
+    for (let i = 0; i < shadowUv.count; i++) {
+        const x = shadowPos.getX(i);
+        const z = shadowPos.getZ(i);
+        const theta = Math.atan2(z, x);
+        const newU = (theta + Math.PI) / (Math.PI * 2);
+        
+        shadowUv.setXY(i, newU, shadowUv.getY(i));
+    }
+    
+    shadowUv.needsUpdate = true;
     
     const shadowRingMaterial = new THREE.MeshBasicMaterial({
         color: 0x000000,
