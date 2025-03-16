@@ -27,44 +27,44 @@ Este documento lista as melhorias planejadas para o simulador do sistema solar, 
 
 ## 2. Modo Educacional
 
-- [ ] **Tour Guiado**: Criar um modo de tour pelo sistema solar
-  - [ ] Implementar sequência de visitas a cada planeta com informações
-  - [ ] Adicionar narração ou texto explicativo para cada corpo celeste
-  - [ ] Criar transições suaves entre os pontos do tour
+- [x] **Tour Guiado**: Criar um modo de tour pelo sistema solar
+  - [x] Implementar sequência de visitas a cada planeta com informações
+  - [x] Adicionar narração ou texto explicativo para cada corpo celeste
+  - [x] Criar transições suaves entre os pontos do tour
 
-- [ ] **Fatos Científicos Interativos**: Exibir informações ao focar em corpos celestes
-  - [ ] Criar sistema de cards informativos para cada planeta
-  - [ ] Adicionar dados comparativos entre planetas
-  - [ ] Incluir curiosidades e descobertas recentes
+- [x] **Fatos Científicos Interativos**: Exibir informações ao focar em corpos celestes
+  - [x] Criar sistema de cards informativos para cada planeta
+  - [x] Adicionar dados comparativos entre planetas
+  - [x] Incluir curiosidades e descobertas recentes
 
 - [ ] **Linha do Tempo de Exploração**: Mostrar histórico de missões espaciais
-  - [ ] Criar visualização cronológica de missões para cada planeta
+  - [x] Criar visualização cronológica de missões para cada planeta
   - [ ] Adicionar marcos importantes na exploração espacial
   - [ ] Incluir imagens históricas das missões
 
 ## 3. Fenômenos Astronômicos
 
-- [ ] **Eclipses**: Simular eclipses solares e lunares
-  - [ ] Implementar oclusão precisa da luz
-  - [ ] Adicionar efeitos visuais para eclipses
-  - [ ] Criar controle de tempo para visualizar eclipses específicos
+- [x] **Eclipses**: Simular eclipses solares e lunares
+  - [x] Implementar oclusão precisa da luz
+  - [x] Adicionar efeitos visuais para eclipses
+  - [x] Criar controle de tempo para visualizar eclipses específicos
 
-- [ ] **Chuvas de Meteoros**: Adicionar eventos periódicos
-  - [ ] Implementar sistema de partículas para meteoros
-  - [ ] Criar calendário de eventos astronômicos
-  - [ ] Adicionar opção para acelerar o tempo até o próximo evento
+- [x] **Chuvas de Meteoros**: Adicionar eventos periódicos
+  - [x] Implementar sistema de partículas para meteoros
+  - [x] Criar calendário de eventos astronômicos
+  - [x] Adicionar opção para acelerar o tempo até o próximo evento
 
-- [ ] **Cometas**: Implementar cometas com órbitas elípticas
-  - [ ] Criar modelo visual realista para cometas (núcleo, coma, cauda)
-  - [ ] Implementar órbitas de longo período
-  - [ ] Adicionar efeitos de interação com o vento solar
+- [x] **Cometas**: Implementar cometas com órbitas elípticas
+  - [x] Criar modelo visual realista para cometas (núcleo, coma, cauda)
+  - [x] Implementar órbitas de longo período
+  - [x] Adicionar efeitos de interação com o vento solar
 
 ## 4. Visualização Avançada
 
 - [x] **Efeitos Atmosféricos**: Melhorar a representação visual das atmosferas
   - [x] Implementar shaders para dispersão atmosférica
   - [x] Criar efeitos de refração da luz através das atmosferas
-  - [ ] Adicionar nuvens e padrões climáticos para planetas com atmosfera
+  - [x] Adicionar nuvens e padrões climáticos para planetas com atmosfera
 
 - [x] **Anéis Planetários Expandidos**: Adicionar anéis para outros planetas
   - [x] Implementar anéis para Urano e Netuno
@@ -83,15 +83,15 @@ Este documento lista as melhorias planejadas para o simulador do sistema solar, 
   - [ ] Adicionar opção para salvar configurações personalizadas
   - [ ] Criar biblioteca de texturas para objetos personalizados
 
-- [ ] **Simulador de Missões**: Adicionar modo de planejamento de missões
-  - [ ] Implementar cálculo de trajetórias e assistência gravitacional
-  - [ ] Criar visualização de janelas de lançamento
-  - [ ] Adicionar estimativas de tempo e recursos para missões
+- [x] **Simulador de Missões**: Adicionar modo de planejamento de missões
+  - [x] Implementar cálculo de trajetórias e assistência gravitacional
+  - [x] Criar visualização de janelas de lançamento
+  - [x] Adicionar estimativas de tempo e recursos para missões
 
-- [ ] **Ferramenta de Medição**: Implementar sistema para medir distâncias
-  - [ ] Criar régua virtual entre corpos celestes
-  - [ ] Adicionar cálculo de tempo de viagem com diferentes tecnologias
-  - [ ] Implementar visualização de escala comparativa
+- [x] **Ferramenta de Medição**: Implementar sistema para medir distâncias
+  - [x] Criar régua virtual entre corpos celestes
+  - [x] Adicionar cálculo de tempo de viagem com diferentes tecnologias
+  - [x] Implementar visualização de escala comparativa
 
 ## 6. Otimização de Desempenho
 
@@ -117,10 +117,10 @@ Este documento lista as melhorias planejadas para o simulador do sistema solar, 
   - [ ] Criar layout responsivo para diferentes tamanhos de tela
   - [ ] Otimizar desempenho para hardware móvel
 
-- [ ] **Modo VR**: Adicionar suporte para realidade virtual
-  - [ ] Implementar visualização estereoscópica
-  - [ ] Criar controles específicos para VR
-  - [ ] Otimizar escala e perspectiva para experiência imersiva
+- [x] **Modo VR**: Adicionar suporte para realidade virtual
+  - [x] Implementar visualização estereoscópica
+  - [x] Criar controles específicos para VR
+  - [x] Otimizar escala e perspectiva para experiência imersiva
 
 - [ ] **Versão PWA**: Criar aplicativo web progressivo
   - [ ] Implementar service workers para funcionamento offline
@@ -146,15 +146,15 @@ Este documento lista as melhorias planejadas para o simulador do sistema solar, 
 
 ## 9. Expansão do Sistema Solar
 
-- [ ] **Cinturão de Kuiper**: Adicionar região além de Netuno
-  - [ ] Implementar objetos principais como Plutão, Haumea, Makemake
-  - [ ] Criar distribuição realista de objetos menores
-  - [ ] Adicionar informações sobre esta região do sistema solar
+- [x] **Cinturão de Kuiper**: Adicionar região além de Netuno
+  - [x] Implementar objetos principais como Plutão, Haumea, Makemake
+  - [x] Criar distribuição realista de objetos menores
+  - [x] Adicionar informações sobre esta região do sistema solar
 
-- [ ] **Nuvem de Oort**: Implementar as bordas do sistema solar
-  - [ ] Criar representação visual da nuvem
-  - [ ] Adicionar cometas de longo período originários desta região
-  - [ ] Implementar escala ajustável para visualizar esta região distante
+- [x] **Nuvem de Oort**: Implementar as bordas do sistema solar
+  - [x] Criar representação visual da nuvem
+  - [x] Adicionar cometas de longo período originários desta região
+  - [x] Implementar escala ajustável para visualizar esta região distante
 
 - [ ] **Exoplanetas**: Adicionar sistemas planetários além do nosso
   - [ ] Implementar visualização de exoplanetas conhecidos
@@ -257,15 +257,26 @@ Este documento lista as melhorias planejadas para o simulador do sistema solar, 
 **Arquivos modificados:** js/app.js, js/modules/ui/measurement-tool.js
 **Observações:** Oferece uma interface intuitiva para medir a distância entre quaisquer dois objetos no Sistema Solar, exibindo os resultados em unidades astronômicas (UA) e quilômetros (km). Inclui informações educativas como tempo de viagem da luz e tempo estimado de sondas espaciais para percorrer as distâncias medidas, facilitando a compreensão das escalas astronômicas.
 
+### [15/03/2024] - [Simulador de Missões Espaciais]
+**Descrição:** Simulação de trajetórias de missões espaciais históricas e planejadas
+**Arquivos modificados:** js/app.js, js/modules/core/space-missions.js, js/modules/ui/space-missions-panel.js
+**Observações:** Permite visualizar as trajetórias e informações detalhadas de missões espaciais históricas (como Voyager, Pioneer, New Horizons), ativas (como Juno, Parker Solar Probe) e planejadas (como Artemis). Cada missão inclui dados como data de lançamento, veículo utilizado, objetivos, conquistas e links para sites oficiais. As trajetórias são visualizadas como curvas coloridas no espaço, com miniaturas representando as sondas em seu progresso ao longo do caminho.
+
+### [15/03/2024] - [Modo VR]
+**Descrição:** Suporte para dispositivos de realidade virtual
+**Arquivos Modificados**:
+  - `js/app.js` - Integração do sistema VR
+  - `js/modules/vr/vr-system.js` - Criação do módulo principal de VR
+  - `js/modules/vr/vr-instructions.js` - Instruções e ajuda para modo VR
+  - `css/style.css` - Adição de estilos para elementos de interface VR
+**Observações**: Permite explorar o sistema solar em realidade virtual usando dispositivos compatíveis com WebXR. Inclui controles intuitivos para navegar pelo espaço, interagir com planetas e outros objetos, e visualizar informações detalhadas. A experiência é otimizada para escala, proporcionando uma visualização imersiva e educativa do Sistema Solar.
+
 ---
 
 ## Prioridades para Próxima Iteração
 
-1. Implementar a Nuvem de Oort com cometas de longo período
-2. Criar ferramenta de medição para distâncias entre corpos celestes
-3. Adicionar simulador de missões espaciais
-4. Implementar modo VR para experiência imersiva
-5. Expandir o sistema para incluir exoplanetas conhecidos 
+2. Integração com APIs Astronômicas
+3. Eventos Astronômicos Realistas
 
 # Melhorias Implementadas e Planejadas
 
@@ -379,19 +390,61 @@ Este documento lista as melhorias planejadas para o simulador do sistema solar, 
   - `js/modules/ui/measurement-tool.js` - Criação do módulo de medição
 - **Observações**: Oferece uma interface intuitiva para medir a distância entre quaisquer dois objetos no Sistema Solar, exibindo os resultados em unidades astronômicas (UA) e quilômetros (km). Inclui informações educativas como tempo de viagem da luz e tempo estimado de sondas espaciais para percorrer as distâncias medidas, facilitando a compreensão das escalas astronômicas.
 
-## Planejadas para Próximas Versões
-
 ### Simulador de Missões Espaciais
 - **Descrição**: Simulação de trajetórias de missões espaciais históricas e planejadas
-- **Prioridade**: Alta
-- **Observações**: Conteúdo educativo sobre exploração espacial
+- **Arquivos Modificados**:
+  - `js/app.js` - Integração do simulador de missões espaciais
+  - `js/modules/core/space-missions.js` - Criação do módulo principal de missões
+  - `js/modules/ui/space-missions-panel.js` - Interface para visualização e controle de missões
+- **Observações**: Permite visualizar as trajetórias e informações detalhadas de missões espaciais históricas (como Voyager, Pioneer, New Horizons), ativas (como Juno, Parker Solar Probe) e planejadas (como Artemis). Cada missão inclui dados como data de lançamento, veículo utilizado, objetivos, conquistas e links para sites oficiais. As trajetórias são visualizadas como curvas coloridas no espaço, com miniaturas representando as sondas em seu progresso ao longo do caminho.
 
 ### Modo VR
 - **Descrição**: Suporte para dispositivos de realidade virtual
-- **Prioridade**: Média
-- **Observações**: Experiência imersiva de exploração espacial
+- **Arquivos Modificados**:
+  - `js/app.js` - Integração do sistema VR
+  - `js/modules/vr/vr-system.js` - Criação do módulo principal de VR
+  - `js/modules/vr/vr-instructions.js` - Instruções e ajuda para modo VR
+  - `css/style.css` - Adição de estilos para elementos de interface VR
+- **Observações**: Permite explorar o sistema solar em realidade virtual usando dispositivos compatíveis com WebXR. Inclui controles intuitivos para navegar pelo espaço, interagir com planetas e outros objetos, e visualizar informações detalhadas. A experiência é otimizada para escala, proporcionando uma visualização imersiva e educativa do Sistema Solar.
+
+## Planejadas para Próximas Versões
 
 ### Exoplanetas
 - **Descrição**: Adição de sistemas de exoplanetas conhecidos
-- **Prioridade**: Baixa
+- **Prioridade**: Alta
+- **Observações**: Expandir além do Sistema Solar
+
+### Detalhamento das Melhorias Implementadas
+
+#### Sistema de Exoplanetas
+O sistema de exoplanetas implementa uma representação interativa de sistemas exoplanetários conhecidos. Principais características:
+
+- Visualização de 5 sistemas exoplanetários famosos: TRAPPIST-1, Proxima Centauri, Kepler-90, HR 8799 e TOI-700
+- Modelagem realista de estrelas com cores e tamanhos proporcionais a seus tipos espectrais
+- Modelagem de exoplanetas com tamanhos proporcionais e indicação visual de habitabilidade
+- Simulação de órbitas baseadas em dados científicos reais (semi-eixo maior, excentricidade)
+- Painel interativo para seleção de sistemas por distância, tipo de estrela ou habitabilidade
+- Informações detalhadas sobre cada sistema e planeta, incluindo massa, raio, período orbital e dados de descoberta
+- Interface para navegar entre sistemas e focar em planetas específicos
+- Efeitos visuais para destacar estrelas e planetas habitáveis
+
+Arquivos modificados:
+- `js/modules/core/exoplanet-system.js` - Implementação principal do sistema
+- `js/modules/data/exoplanet-data.js` - Catálogo de dados sobre exoplanetas
+- `js/modules/ui/exoplanet-panel.js` - Interface para interação com exoplanetas
+- `css/style.css` - Estilos para o painel de exoplanetas
+- `js/app.js` - Integração com o aplicativo principal
+- `js/modules/ui/main-menu.js` - Adição de botão para acessar exoplanetas
+
+## Prioridades para Próxima Iteração
+
+4. ~~Implementar a Nuvem de Oort com cometas de longo período~~
+5. ~~Criar ferramenta de medição para distâncias entre corpos celestes~~
+6. ~~Adicionar simulador de missões espaciais~~
+7. ~~Implementar modo VR para experiência imersiva~~
+8. Expandir o sistema para incluir exoplanetas conhecidos
+
+9. ~~Adicionar simulador de missões espaciais~~
+10. ~~Implementar modo VR para experiência imersiva~~
+11. Expandir o sistema para incluir exoplanetas conhecidos
 - **Observações**: Expandir além do Sistema Solar 

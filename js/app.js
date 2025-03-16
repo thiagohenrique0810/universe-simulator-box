@@ -55,6 +55,9 @@ import { initTourGuide } from './modules/ui/tour-guide.js';
 import { initOortCloud, updateOortCloud } from './modules/core/oort-cloud.js';
 import { initOortCloudControls } from './modules/ui/oort-cloud-controls.js';
 import { initMeasurementTool } from './modules/ui/measurement-tool.js';
+import { initSpaceMissions, updateMissions } from './modules/core/space-missions.js';
+import { initMissionsPanel } from './modules/ui/space-missions-panel.js';
+import { initVRSystem, updateVRSystem } from './modules/vr/vr-system.js';
 
 // Importação do módulo de áudio
 import { setupBackgroundMusic } from './modules/audio/background-music.js';
@@ -64,6 +67,10 @@ import { applyFavicon, applyStaticFavicon } from '../img/favicon.js';
 
 // Importação do módulo de atmosfera
 import { applyAtmosphericEffect, removeAtmosphericEffect, toggleAtmosphericEffects } from './modules/core/atmosphere.js';
+
+// Importar módulos de exoplanetas
+import { initExoplanetSystem, updateExoplanetSystems } from './modules/core/exoplanet-system.js';
+import { initExoplanetPanel } from './modules/ui/exoplanet-panel.js';
 
 // Variáveis globais da aplicação
 let scene, camera, renderer, controls;
@@ -79,6 +86,12 @@ let meteorSystem;
 let tourGuideSystem;
 let oortCloudSystem;
 let measurementTool;
+let missionsSystem;
+let vrSystem;
+
+// Variáveis globais para o sistema de exoplanetas
+let exoplanetSystem;
+let exoplanetPanel;
 
 /**
  * Inicializa o sistema solar
@@ -298,6 +311,30 @@ function init() {
     // Inicializar a ferramenta de medição
     console.log('Inicializando a ferramenta de medição de distâncias...');
     measurementTool = initMeasurementTool(scene, camera, controls, planets);
+    
+    // Inicializar o simulador de missões espaciais
+    console.log('Inicializando o simulador de missões espaciais...');
+    missionsSystem = initSpaceMissions(scene, planets);
+    
+    // Inicializar o painel de controle de missões
+    initMissionsPanel(missionsSystem);
+    
+    // Inicializar o sistema VR
+    vrSystem = initVRSystem(scene, renderer, camera, controls, planets);
+    if (vrSystem.isVRSupported) {
+        console.log('Sistema VR inicializado com sucesso');
+    } else {
+        console.warn('WebXR não suportado neste navegador. O modo VR não estará disponível.');
+    }
+    
+    // Inicializar sistema de exoplanetas
+    exoplanetSystem = initExoplanetSystem(scene);
+    if (exoplanetSystem) {
+        console.log('Sistema de exoplanetas inicializado');
+        
+        // Inicializar painel de controle de exoplanetas
+        exoplanetPanel = initExoplanetPanel(exoplanetSystem, camera, controls);
+    }
     
     // Iniciar a animação
     animate();
@@ -599,9 +636,31 @@ function animate(timestamp) {
         updateMeteorShowers(meteorSystem);
     }
     
+    // Atualizar o simulador de missões espaciais
+    if (missionsSystem) {
+        updateMissions(missionsSystem, deltaTime, getSimulationSpeed());
+    }
+    
+    // Atualizar o sistema VR
+    if (vrSystem && vrSystem.isVRSupported) {
+        updateVRSystem(timestamp, deltaTime);
+    }
+    
+    // Atualizar sistema de exoplanetas
+    if (exoplanetSystem) {
+        updateExoplanetSystems(timestamp, deltaTime, getSimulationSpeed());
+    }
+    
     // Renderizar a cena
     renderScene();
 }
 
 // Iniciar o simulador quando a página estiver carregada
-window.addEventListener('load', init); 
+window.addEventListener('load', init);
+
+// Adicionar função para abrir o painel de exoplanetas
+export function openExoplanetPanel() {
+    if (exoplanetPanel) {
+        exoplanetPanel.showPanel();
+    }
+} 
