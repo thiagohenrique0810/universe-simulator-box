@@ -27,11 +27,14 @@ import { createStars, toggleStarsVisibility } from './modules/core/stars.js';
 
 // Importação dos módulos de UI
 import { setupPlanetSelection, updateCameraFocus } from './modules/ui/planet-selection.js';
-import { createInfoPanel, showPlanetInfo } from './modules/ui/info-panel.js';
+import { createInfoPanel, showPlanetInfo, showMoonInfo, showDwarfPlanetInfo } from './modules/ui/info-panel.js';
 import { createSimulationControls, getSimulationSpeed } from './modules/ui/simulation-controls.js';
 
 // Importação do módulo de áudio
 import { setupBackgroundMusic } from './modules/audio/background-music.js';
+
+// Importação do módulo de favicon
+import { applyFavicon, applyStaticFavicon } from '../img/favicon.js';
 
 // Variáveis globais da aplicação
 let scene, camera, renderer, controls;
@@ -49,6 +52,16 @@ function init() {
     camera = renderSystem.camera;
     renderer = renderSystem.renderer;
     controls = renderSystem.controls;
+    
+    // Aplicar o favicon
+    try {
+        // Tentar usar a versão dinâmica do favicon
+        applyFavicon();
+    } catch (error) {
+        // Se falhar, usar a versão estática como fallback
+        console.warn('Erro ao aplicar favicon dinâmico, usando versão estática:', error);
+        applyStaticFavicon();
+    }
     
     // Ajustar velocidades dos planetas de acordo com a Terceira Lei de Kepler
     ajustarVelocidadesKeplerianas(PLANET_DATA);
@@ -68,10 +81,14 @@ function init() {
     // Realizar uma validação inicial de órbitas para garantir posicionamento correto
     validatePlanetOrbits(planets, getOrbits());
     
-    // Configurar o sistema de seleção de planetas
-    setupPlanetSelection(scene, camera, (planetName) => {
-        showPlanetInfo(planetName, PLANET_INFO, PLANET_DATA);
-    });
+    // Configurar o sistema de seleção de planetas, luas e planetas anões
+    setupPlanetSelection(
+        scene, 
+        camera, 
+        (planetName) => showPlanetInfo(planetName, PLANET_INFO, PLANET_DATA),
+        (moonName, planetName) => showMoonInfo(moonName, planetName, PLANET_DATA),
+        (dwarfPlanetName) => showDwarfPlanetInfo(dwarfPlanetName)
+    );
     
     // Criar o painel de informações
     createInfoPanel(PLANET_INFO);

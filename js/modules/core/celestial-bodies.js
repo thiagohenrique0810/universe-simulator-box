@@ -301,7 +301,24 @@ function createMoon(planet, satellite) {
     });
     
     const moon = new THREE.Mesh(moonGeometry, moonMaterial);
-    moon.name = satellite.name;
+    moon.name = satellite.name; // Garantir que o nome da lua seja definido corretamente
+    
+    // Carregar textura da lua se estiver definida
+    if (satellite.textureUrl) {
+        const textureLoader = new THREE.TextureLoader();
+        textureLoader.load(
+            satellite.textureUrl,
+            function(texture) {
+                moon.material.map = texture;
+                moon.material.needsUpdate = true;
+                console.log(`Textura carregada com sucesso para ${satellite.name}: ${satellite.textureUrl}`);
+            },
+            undefined,
+            function(err) {
+                console.error(`Erro ao carregar textura para ${satellite.name}:`, err);
+            }
+        );
+    }
     
     // Posicionar a lua
     const moonAngle = Math.random() * Math.PI * 2;
@@ -328,7 +345,9 @@ function createMoon(planet, satellite) {
             isElliptical: true,
             eccentricity: satellite.eccentricity,
             semiMajorAxis: a,
-            radius: satellite.radius
+            radius: satellite.radius,
+            isMoon: true, // Marcar explicitamente como lua
+            planetParent: planet.name // Armazenar o nome do planeta pai
         };
         
         // Criar uma órbita visual para a lua
@@ -345,25 +364,21 @@ function createMoon(planet, satellite) {
             rotationSpeed: satellite.rotationSpeed,
             eccentricity: 0,
             semiMajorAxis: satellite.distance,
-            radius: satellite.radius
+            radius: satellite.radius,
+            isMoon: true, // Marcar explicitamente como lua
+            planetParent: planet.name // Armazenar o nome do planeta pai
         };
         
         // Criar órbita visual para lua com órbita circular
         createMoonOrbitCircular(planet, satellite.distance);
     }
     
-    // Dados para animação da lua
-    moon.userData = {
-        angle: Math.random() * Math.PI * 2,
-        distance: satellite.distance,
-        rotationSpeed: satellite.rotationSpeed,
-        orbitalSpeed: satellite.orbitalSpeed,
-        eccentricity: satellite.eccentricity || 0,
-        semiMajorAxis: satellite.distance,
-        radius: satellite.radius
-    };
-    
+    // Adicionar a lua ao planeta
     planet.add(moon);
+    
+    console.log(`Lua criada: ${moon.name} para o planeta ${planet.name}`);
+    
+    return moon;
 }
 
 /**

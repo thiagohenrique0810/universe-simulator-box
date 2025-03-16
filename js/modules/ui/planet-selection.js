@@ -11,12 +11,14 @@ let cameraFocusEnabled = false;
 let initialCameraDistance = 0; // Distância inicial entre a câmera e o objeto focado
 
 /**
- * Configura o sistema de seleção de planetas
+ * Configura o sistema de seleção de planetas e luas
  * @param {Object} scene - Cena Three.js
  * @param {Object} camera - Câmera Three.js
  * @param {Function} showInfoCallback - Função para mostrar informações do planeta selecionado
+ * @param {Function} showMoonInfoCallback - Função para mostrar informações da lua selecionada
+ * @param {Function} showDwarfPlanetInfoCallback - Função para mostrar informações do planeta anão selecionado
  */
-export function setupPlanetSelection(scene, camera, showInfoCallback) {
+export function setupPlanetSelection(scene, camera, showInfoCallback, showMoonInfoCallback, showDwarfPlanetInfoCallback) {
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     let lastClickTime = 0;
@@ -25,7 +27,7 @@ export function setupPlanetSelection(scene, camera, showInfoCallback) {
     // Buscar referência para os controles
     const controls = camera.userData.controls;
     
-    // Função de clique para seleção de planetas
+    // Função de clique para seleção de planetas e luas
     window.addEventListener('click', function(event) {
         try {
             const currentTime = new Date().getTime();
@@ -43,35 +45,84 @@ export function setupPlanetSelection(scene, camera, showInfoCallback) {
             const intersects = raycaster.intersectObjects(scene.children, true);
             
             if (intersects.length > 0) {
-                // Procurar um planeta entre os objetos intersectados
-                let foundPlanet = false;
-                let foundPlanetName = null;
+                // Procurar um planeta, lua ou planeta anão entre os objetos intersectados
                 let foundObject = null;
+                let foundObjectName = null;
+                let foundObjectType = null; // 'planet', 'moon' ou 'dwarfPlanet'
+                let parentPlanet = null; // Para luas, armazenar o planeta pai
                 
-                for (let i = 0; i < intersects.length && !foundPlanet; i++) {
+                for (let i = 0; i < intersects.length && !foundObject; i++) {
                     const object = intersects[i].object;
                     if (!object) continue;
                     
-                    // Método mais robusto para encontrar o planeta clicado
-                    // Verificar se o objeto ou qualquer um de seus ancestrais é um planeta
+                    // Método mais robusto para encontrar o objeto clicado
+                    // Verificar se o objeto ou qualquer um de seus ancestrais é um planeta, lua ou planeta anão
                     let currentObj = object;
-                    while (currentObj && !foundPlanet) {
-                        // Se o objeto tem nome, pode ser um planeta
+                    let possibleParent = null;
+                    
+                    while (currentObj) {
+                        // Se o objeto tem nome, pode ser um planeta, lua ou planeta anão
                         if (currentObj.name) {
-                            console.log(`Objeto encontrado: ${currentObj.name}`);
-                            foundPlanetName = currentObj.name;
-                            foundObject = currentObj;
-                            foundPlanet = true;
-                            break;
+                            console.log(`Objeto encontrado: ${currentObj.name}, Parent: ${currentObj.parent ? currentObj.parent.name : 'none'}, userData: ${JSON.stringify(currentObj.userData || {})}`);
+                            
+                            // Verificar se é um planeta anão
+                            const dwarfPlanetNames = ['ceres', 'eris', 'makemake', 'haumea', 'moon'];
+                            if (dwarfPlanetNames.includes(currentObj.name) || 
+                                (currentObj.userData && currentObj.userData.isDwarfPlanet)) {
+                                console.log(`Planeta anão detectado: ${currentObj.name}`);
+                                foundObjectType = 'dwarfPlanet';
+                                foundObjectName = currentObj.name;
+                                foundObject = currentObj;
+                                break;
+                            }
+                            // Verificar se é uma lua usando a propriedade userData.isMoon
+                            else if (currentObj.userData && currentObj.userData.isMoon) {
+                                console.log(`Lua detectada via userData: ${currentObj.name} do planeta ${currentObj.userData.planetParent}`);
+                                foundObjectType = 'moon';
+                                foundObjectName = currentObj.name;
+                                foundObject = currentObj;
+                                parentPlanet = currentObj.parent;
+                                break;
+                            }
+                            // Verificar se é uma lua pela hierarquia (método alternativo)
+                            else if (currentObj.parent && currentObj.parent.name && 
+                                ['sol', 'mercurio', 'venus', 'terra', 'marte', 'jupiter', 'saturno', 'urano', 'netuno'].includes(currentObj.parent.name) &&
+                                !['sol', 'mercurio', 'venus', 'terra', 'marte', 'jupiter', 'saturno', 'urano', 'netuno'].includes(currentObj.name)) {
+                                
+                                console.log(`Lua detectada pela hierarquia: ${currentObj.name} do planeta ${currentObj.parent.name}`);
+                                foundObjectType = 'moon';
+                                foundObjectName = currentObj.name;
+                                foundObject = currentObj;
+                                parentPlanet = currentObj.parent;
+                                break;
+                            } 
+                            // Verificar se é um planeta
+                            else if (['sol', 'mercurio', 'venus', 'terra', 'marte', 'jupiter', 'saturno', 'urano', 'netuno'].includes(currentObj.name)) {
+                                console.log(`Planeta detectado: ${currentObj.name}`);
+                                foundObjectType = 'planet';
+                                foundObjectName = currentObj.name;
+                                foundObject = currentObj;
+                                break;
+                            }
+                            // Se não é nem planeta nem lua, continuar procurando
+                            else {
+                                possibleParent = currentObj;
+                            }
                         }
                         
                         // Subir na hierarquia de objetos
                         currentObj = currentObj.parent;
                     }
+                    
+                    // Se não encontrou um objeto específico, usar o possível pai
+                    if (!foundObject && possibleParent) {
+                        foundObject = possibleParent;
+                        foundObjectName = possibleParent.name;
+                    }
                 }
                 
-                // Se não encontrou um planeta nomeado, considere o primeiro objeto clicado
-                if (!foundPlanet && intersects.length > 0) {
+                // Se não encontrou um objeto nomeado, considere o primeiro objeto clicado
+                if (!foundObject && intersects.length > 0) {
                     foundObject = intersects[0].object;
                     console.log("Objeto não nomeado clicado");
                 }
@@ -86,19 +137,30 @@ export function setupPlanetSelection(scene, camera, showInfoCallback) {
                     selectedObject = null;
                 }
                 
-                // Mostrar informações do planeta encontrado (apenas para clique normal)
-                if (foundPlanet && foundPlanetName && !isDoubleClick) {
+                // Mostrar informações do objeto encontrado (apenas para clique normal)
+                if (foundObject && foundObjectName && !isDoubleClick) {
                     try {
-                        selectedPlanet = foundPlanetName;
                         selectedObject = foundObject;
-                        if (showInfoCallback && typeof showInfoCallback === 'function') {
-                            showInfoCallback(foundPlanetName);
+                        
+                        if (foundObjectType === 'planet') {
+                            selectedPlanet = foundObjectName;
+                            if (showInfoCallback && typeof showInfoCallback === 'function') {
+                                showInfoCallback(foundObjectName);
+                            }
+                        } else if (foundObjectType === 'moon' && parentPlanet) {
+                            if (showMoonInfoCallback && typeof showMoonInfoCallback === 'function') {
+                                showMoonInfoCallback(foundObjectName, parentPlanet.name);
+                            }
+                        } else if (foundObjectType === 'dwarfPlanet') {
+                            if (showDwarfPlanetInfoCallback && typeof showDwarfPlanetInfoCallback === 'function') {
+                                showDwarfPlanetInfoCallback(foundObjectName);
+                            }
                         }
                     } catch (e) {
-                        console.error('Erro ao mostrar informações do planeta:', e);
+                        console.error('Erro ao mostrar informações do objeto:', e);
                     }
                 } else if (!isDoubleClick) {
-                    // Se nenhum planeta foi clicado, esconder o painel de informações
+                    // Se nenhum objeto foi clicado, esconder o painel de informações
                     const infoPanel = document.getElementById('planet-info');
                     if (infoPanel) {
                         infoPanel.style.display = 'none';

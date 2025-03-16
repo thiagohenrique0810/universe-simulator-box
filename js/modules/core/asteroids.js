@@ -14,25 +14,34 @@ let beltRing;
  */
 export function createAsteroidBelt(scene) {
     // Definir parâmetros do cinturão
-    const beltInnerRadius = 30;  // Entre Marte e Júpiter
-    const beltOuterRadius = 40;
-    const numAsteroids = 2000;   // Quantidade de asteroides
+    const beltInnerRadius = 65;  // Logo após a órbita de Marte (55)
+    const beltOuterRadius = 90;  // Antes da órbita de Júpiter (100)
+    const numAsteroids = 3500;   // Aumentando a quantidade de asteroides para maior densidade
     
     // Criar um grupo para armazenar todos os asteroides
     asteroidBelt = new THREE.Group();
     asteroidBelt.name = "cinturaoAsteroides";
     
-    // Carregar a textura do asteroide
+    // Carregar as texturas dos asteroides
     const textureLoader = new THREE.TextureLoader();
-    const asteroidTexture = textureLoader.load('textures/asteroid.avif');
+    const asteroidTextures = [
+        textureLoader.load('textures/asteroid.avif'),
+        textureLoader.load('textures/ceres.jpg'),
+        textureLoader.load('textures/eris.jpg'),
+        textureLoader.load('textures/makemake.jpg'),
+        textureLoader.load('textures/moon.jpg'),
+        textureLoader.load('textures/haumea.jpg')
+    ];
     
-    // Material base para os asteroides com a textura carregada
-    const asteroidMaterial = new THREE.MeshStandardMaterial({ 
-        map: asteroidTexture,
-        roughness: 0.8,
-        metalness: 0.2,
-        bumpScale: 0.02,
-        side: THREE.DoubleSide // Renderiza ambos os lados das faces
+    // Materiais base para os asteroides com as texturas carregadas
+    const asteroidMaterials = asteroidTextures.map(texture => {
+        return new THREE.MeshStandardMaterial({ 
+            map: texture,
+            roughness: 0.8,
+            metalness: 0.2,
+            bumpScale: 0.02,
+            side: THREE.DoubleSide // Renderiza ambos os lados das faces
+        });
     });
     
     // Função para criar geometria de asteroide deformada
@@ -70,52 +79,93 @@ export function createAsteroidBelt(scene) {
         // Criar geometria deformada para este asteroide específico
         const asteroidGeometry = createAsteroidGeometry(0.03);
         
-        // Criar o asteroide com o material de textura
-        const asteroid = new THREE.Mesh(asteroidGeometry, asteroidMaterial.clone());
+        // Selecionar um material aleatório da lista de materiais
+        const materialIndex = Math.floor(Math.random() * asteroidMaterials.length);
+        
+        // Criar o asteroide com o material de textura selecionado
+        const asteroid = new THREE.Mesh(asteroidGeometry, asteroidMaterials[materialIndex].clone());
         asteroid.name = `asteroide_${i}`;
         
-        // Posicionar aleatoriamente no cinturão
-        const distance = beltInnerRadius + Math.random() * (beltOuterRadius - beltInnerRadius);
-        const angle = Math.random() * Math.PI * 2;
-        
-        // Altura aleatória (ligeiramente fora do plano da eclíptica)
-        const height = (Math.random() - 0.5) * 5;
-        
-        // Definir posição
-        asteroid.position.x = Math.cos(angle) * distance;
-        asteroid.position.z = Math.sin(angle) * distance;
-        asteroid.position.y = height;
-        
-        // Escala aleatória para variar tamanho (reduzida ainda mais)
-        const scale = 0.1 + Math.random() * 0.6;
-        asteroid.scale.set(scale, scale, scale);
-        
-        // Deformação adicional pela escala em um eixo
-        const stretchAxis = Math.floor(Math.random() * 3); // 0, 1 ou 2 (x, y, z)
-        const stretchFactor = 0.75 + Math.random() * 0.5;
-        
-        if (stretchAxis === 0) {
-            asteroid.scale.x *= stretchFactor;
-        } else if (stretchAxis === 1) {
-            asteroid.scale.y *= stretchFactor;
+        // Para os primeiros 5 asteroides, usar texturas específicas e torná-los maiores (planetas anões)
+        if (i < 5) {
+            // Usar uma textura específica para cada planeta anão
+            asteroid.material = asteroidMaterials[i+1].clone(); // Começar do índice 1 (ceres, eris, etc.)
+            
+            // Nomes dos planetas anões
+            const dwarfPlanetNames = ['ceres', 'eris', 'makemake', 'moon', 'haumea'];
+            asteroid.name = dwarfPlanetNames[i];
+            
+            // Tornar estes asteroides maiores (planetas anões)
+            const scale = 1.0 + Math.random() * 0.5; // Escala maior
+            asteroid.scale.set(scale, scale, scale);
+            
+            // Posicionar em locais específicos do cinturão
+            const angle = (i / 5) * Math.PI * 2; // Distribuir uniformemente
+            const distance = beltInnerRadius + (i / 4) * (beltOuterRadius - beltInnerRadius);
+            
+            // Altura menor para planetas anões (mais próximos do plano da eclíptica)
+            const height = (Math.random() - 0.5) * 3;
+            
+            // Definir posição
+            asteroid.position.x = Math.cos(angle) * distance;
+            asteroid.position.z = Math.sin(angle) * distance;
+            asteroid.position.y = height;
+            
+            // Dados para animação
+            asteroid.userData = {
+                angle: angle,
+                distance: distance,
+                height: height,
+                rotationSpeed: 0.002 + Math.random() * 0.005, // Rotação mais lenta
+                orbitalSpeed: 0.0003 + Math.random() * 0.0005, // Órbita mais lenta
+                radius: 0.03 * scale, // Armazenar o raio escalado para referência
+                isDwarfPlanet: true,
+                name: dwarfPlanetNames[i]
+            };
         } else {
-            asteroid.scale.z *= stretchFactor;
+            // Posicionar aleatoriamente no cinturão
+            const distance = beltInnerRadius + Math.random() * (beltOuterRadius - beltInnerRadius);
+            const angle = Math.random() * Math.PI * 2;
+            
+            // Altura aleatória (mais espalhada verticalmente para um efeito mais realista)
+            const height = (Math.random() - 0.5) * 10;
+            
+            // Definir posição
+            asteroid.position.x = Math.cos(angle) * distance;
+            asteroid.position.z = Math.sin(angle) * distance;
+            asteroid.position.y = height;
+            
+            // Escala aleatória para variar tamanho (reduzida ainda mais)
+            const scale = 0.1 + Math.random() * 0.6;
+            asteroid.scale.set(scale, scale, scale);
+            
+            // Deformação adicional pela escala em um eixo
+            const stretchAxis = Math.floor(Math.random() * 3); // 0, 1 ou 2 (x, y, z)
+            const stretchFactor = 0.75 + Math.random() * 0.5;
+            
+            if (stretchAxis === 0) {
+                asteroid.scale.x *= stretchFactor;
+            } else if (stretchAxis === 1) {
+                asteroid.scale.y *= stretchFactor;
+            } else {
+                asteroid.scale.z *= stretchFactor;
+            }
+            
+            // Rotação aleatória mais interessante
+            asteroid.rotation.x = Math.random() * Math.PI * 2;
+            asteroid.rotation.y = Math.random() * Math.PI * 2;
+            asteroid.rotation.z = Math.random() * Math.PI * 2;
+            
+            // Dados para animação
+            asteroid.userData = {
+                angle: angle,
+                distance: distance,
+                height: height,
+                rotationSpeed: 0.005 + Math.random() * 0.01,
+                orbitalSpeed: 0.0005 + Math.random() * 0.001,
+                radius: 0.03 * scale // Armazenar o raio escalado para referência
+            };
         }
-        
-        // Rotação aleatória mais interessante
-        asteroid.rotation.x = Math.random() * Math.PI * 2;
-        asteroid.rotation.y = Math.random() * Math.PI * 2;
-        asteroid.rotation.z = Math.random() * Math.PI * 2;
-        
-        // Dados para animação
-        asteroid.userData = {
-            angle: angle,
-            distance: distance,
-            height: height,
-            rotationSpeed: 0.005 + Math.random() * 0.01,
-            orbitalSpeed: 0.0005 + Math.random() * 0.001,
-            radius: 0.03 * scale // Armazenar o raio escalado para referência
-        };
         
         // Adicionar ao grupo
         asteroidBelt.add(asteroid);
@@ -127,10 +177,10 @@ export function createAsteroidBelt(scene) {
     // Criar um anel visual para mostrar a área do cinturão
     const beltRingGeometry = new THREE.RingGeometry(beltInnerRadius, beltOuterRadius, 64);
     const beltRingMaterial = new THREE.MeshBasicMaterial({ 
-        color: 0x666666, 
+        color: 0x887766, 
         side: THREE.DoubleSide,
         transparent: true,
-        opacity: 0.15
+        opacity: 0.2
     });
     
     beltRing = new THREE.Mesh(beltRingGeometry, beltRingMaterial);

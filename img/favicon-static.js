@@ -1,0 +1,30 @@
+/**
+ * Versão estática do favicon para o simulador do sistema solar
+ * Esta versão gera um favicon como base64 para navegadores que não suportam canvas
+ */
+
+// Favicon pré-renderizado como base64
+const faviconBase64 = "data:image/png;base64,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";
+
+/**
+ * Aplica o favicon estático ao documento
+ */
+function applyStaticFavicon() {
+    // Remover favicon existente, se houver
+    const existingFavicon = document.querySelector('link[rel="icon"]');
+    if (existingFavicon) {
+        document.head.removeChild(existingFavicon);
+    }
+    
+    // Criar e adicionar o novo favicon
+    const link = document.createElement('link');
+    link.rel = 'icon';
+    link.type = 'image/png';
+    link.href = faviconBase64;
+    document.head.appendChild(link);
+    
+    console.log('Favicon estático aplicado com sucesso!');
+}
+
+// Exportar a função
+export { applyStaticFavicon };

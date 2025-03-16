@@ -183,6 +183,233 @@ export function showPlanetInfo(planetName, PLANET_INFO, PLANET_DATA) {
 }
 
 /**
+ * Exibe informações detalhadas da lua selecionada
+ * @param {String} moonName - Nome da lua
+ * @param {String} planetName - Nome do planeta pai
+ * @param {Object} PLANET_DATA - Dados dos planetas
+ */
+export function showMoonInfo(moonName, planetName, PLANET_DATA) {
+    console.log(`Tentando mostrar informações da lua: ${moonName} do planeta: ${planetName}`);
+    
+    if (!moonName || !planetName || !PLANET_DATA[planetName]) {
+        console.error(`Informações não encontradas para a lua: ${moonName} do planeta: ${planetName}`);
+        return;
+    }
+    
+    try {
+        // Encontrar os dados da lua
+        const planet = PLANET_DATA[planetName];
+        console.log(`Dados do planeta encontrados: ${planetName}, tem satélites: ${!!planet.satellites}`);
+        
+        if (!planet.satellites) {
+            console.error(`O planeta ${planetName} não possui luas definidas.`);
+            return;
+        }
+        
+        console.log(`Satélites do planeta ${planetName}:`, planet.satellites.map(s => s.name).join(', '));
+        
+        const moon = planet.satellites.find(sat => sat.name === moonName);
+        console.log(`Lua encontrada: ${!!moon}, nome buscado: ${moonName}`);
+        
+        if (!moon) {
+            console.error(`Lua ${moonName} não encontrada para o planeta ${planetName}.`);
+            return;
+        }
+        
+        console.log(`Dados da lua encontrados:`, JSON.stringify(moon));
+        
+        // Mostrar o painel
+        infoPanel.style.display = 'block';
+        
+        // Ocultar instruções
+        if (instructions) {
+            instructions.style.display = 'none';
+        }
+        
+        // Atualizar o título do painel
+        const panelTitle = infoPanel.querySelector('h2');
+        if (panelTitle) {
+            panelTitle.textContent = 'Informações da Lua';
+        }
+        
+        // Construir HTML
+        const moonNameCapitalized = moonName.charAt(0).toUpperCase() + moonName.slice(1);
+        const planetNameCapitalized = planetName.charAt(0).toUpperCase() + planetName.slice(1);
+        
+        let htmlContent = `
+            <h3>${moonNameCapitalized}</h3>
+            <div class="info-item">
+                <strong>Planeta:</strong> ${planetNameCapitalized}
+            </div>
+            <div class="info-item">
+                <strong>Raio:</strong> ${(moon.radius * 71492).toFixed(0)} km
+            </div>
+            <div class="info-item">
+                <strong>Distância ao planeta:</strong> ${(moon.distance * 71492).toFixed(0)} km
+            </div>`;
+        
+        // Adicionar informações condicionais
+        if (moon.orbitalSpeed) {
+            htmlContent += `
+            <div class="info-item">
+                <strong>Velocidade orbital:</strong> ${moon.orbitalSpeed.toFixed(4)} rad/s
+            </div>`;
+        }
+        
+        if (moon.rotationSpeed) {
+            htmlContent += `
+            <div class="info-item">
+                <strong>Velocidade de rotação:</strong> ${moon.rotationSpeed.toFixed(4)} rad/s
+            </div>`;
+        }
+        
+        if (moon.eccentricity) {
+            htmlContent += `
+            <div class="info-item">
+                <strong>Excentricidade:</strong> ${moon.eccentricity.toFixed(4)}
+            </div>`;
+        }
+        
+        // Adicionar descrição genérica
+        htmlContent += `
+            <div class="info-description">
+                ${moonNameCapitalized} é uma lua de ${planetNameCapitalized}. As luas são corpos celestes naturais que orbitam planetas ou outros corpos do sistema solar.
+            </div>`;
+        
+        // Atualizar o conteúdo HTML
+        infoContent.innerHTML = htmlContent;
+        
+        // Aplicar estilos CSS
+        applyInfoPanelStyles();
+        
+    } catch (error) {
+        console.error('Erro ao mostrar informações da lua:', error);
+    }
+}
+
+/**
+ * Exibe informações detalhadas do planeta anão selecionado
+ * @param {String} dwarfPlanetName - Nome do planeta anão
+ */
+export function showDwarfPlanetInfo(dwarfPlanetName) {
+    console.log(`Tentando mostrar informações do planeta anão: ${dwarfPlanetName}`);
+    
+    try {
+        // Mostrar o painel
+        infoPanel.style.display = 'block';
+        
+        // Ocultar instruções
+        if (instructions) {
+            instructions.style.display = 'none';
+        }
+        
+        // Atualizar o título do painel
+        const panelTitle = infoPanel.querySelector('h2');
+        if (panelTitle) {
+            panelTitle.textContent = 'Planeta Anão';
+        }
+        
+        // Informações dos planetas anões
+        const dwarfPlanetInfo = {
+            ceres: {
+                nome: 'Ceres',
+                diametro: '940 km',
+                descoberta: '1801 por Giuseppe Piazzi',
+                orbita: '4,6 anos',
+                distanciaSol: '2,77 UA',
+                descricao: 'Ceres é o maior objeto do cinturão de asteroides entre Marte e Júpiter. Foi o primeiro asteroide descoberto e é classificado como planeta anão desde 2006. Contém cerca de um terço da massa total do cinturão de asteroides.'
+            },
+            eris: {
+                nome: 'Éris',
+                diametro: '2.326 km',
+                descoberta: '2005 por Mike Brown',
+                orbita: '558 anos',
+                distanciaSol: '68 UA (no afélio)',
+                descricao: 'Éris é o segundo maior planeta anão conhecido no Sistema Solar e tem uma massa aproximadamente 27% maior que Plutão. Sua descoberta levou à reclassificação de Plutão e à definição formal de "planeta anão".'
+            },
+            makemake: {
+                nome: 'Makemake',
+                diametro: '1.430 km',
+                descoberta: '2005 por Mike Brown',
+                orbita: '306 anos',
+                distanciaSol: '45,8 UA (no afélio)',
+                descricao: 'Makemake é o terceiro maior planeta anão conhecido no Sistema Solar e o segundo maior objeto no cinturão de Kuiper. Tem uma superfície avermelhada e é composto principalmente por metano, etano e nitrogênio congelados.'
+            },
+            haumea: {
+                nome: 'Haumea',
+                diametro: '1.632 × 1.178 km (elipsoide)',
+                descoberta: '2004 por Mike Brown',
+                orbita: '285 anos',
+                distanciaSol: '51,5 UA (no afélio)',
+                descricao: 'Haumea é um dos planetas anões mais incomuns devido à sua forma alongada, resultado de sua rotação extremamente rápida. Completa uma rotação em apenas 4 horas. Possui dois satélites conhecidos e um anel.'
+            },
+            moon: {
+                nome: 'Lua (representação)',
+                diametro: '3.474 km',
+                descoberta: 'Conhecida desde a pré-história',
+                orbita: '27,3 dias',
+                distanciaTerra: '384.400 km',
+                descricao: 'Embora a Lua não seja um planeta anão, mas sim um satélite natural da Terra, sua textura foi incluída aqui para representação visual. É o único satélite natural da Terra e o quinto maior do Sistema Solar.'
+            }
+        };
+        
+        // Verificar se temos informações para este planeta anão
+        if (!dwarfPlanetInfo[dwarfPlanetName]) {
+            console.error(`Informações não encontradas para o planeta anão: ${dwarfPlanetName}`);
+            return;
+        }
+        
+        const info = dwarfPlanetInfo[dwarfPlanetName];
+        
+        // Construir HTML
+        let htmlContent = `
+            <h3>${info.nome}</h3>
+            <div class="info-item">
+                <strong>Diâmetro:</strong> ${info.diametro}
+            </div>
+            <div class="info-item">
+                <strong>Descoberta:</strong> ${info.descoberta}
+            </div>`;
+        
+        if (info.orbita) {
+            htmlContent += `
+            <div class="info-item">
+                <strong>Período Orbital:</strong> ${info.orbita}
+            </div>`;
+        }
+        
+        if (info.distanciaSol) {
+            htmlContent += `
+            <div class="info-item">
+                <strong>Distância ao Sol:</strong> ${info.distanciaSol}
+            </div>`;
+        }
+        
+        if (info.distanciaTerra) {
+            htmlContent += `
+            <div class="info-item">
+                <strong>Distância à Terra:</strong> ${info.distanciaTerra}
+            </div>`;
+        }
+        
+        // Adicionar descrição
+        htmlContent += `
+            <div class="info-description">
+                ${info.descricao}
+            </div>`;
+        
+        // Atualizar o conteúdo HTML
+        infoContent.innerHTML = htmlContent;
+        
+        // Aplicar estilos CSS
+        applyInfoPanelStyles();
+        
+    } catch (error) {
+        console.error('Erro ao mostrar informações do planeta anão:', error);
+    }
+}
+
+/**
  * Aplica estilos ao painel de informações
  */
 function applyInfoPanelStyles() {
