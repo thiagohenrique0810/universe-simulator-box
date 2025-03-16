@@ -54,7 +54,8 @@ function init() {
     ajustarVelocidadesKeplerianas(PLANET_DATA);
     
     // Criar o campo de estrelas
-    stars = createStars(scene);
+    const starsSystem = createStars(scene);
+    stars = starsSystem.stars;
     
     // Criar planetas, sol e luas
     planets = createCelestialBodies(scene, PLANET_DATA);

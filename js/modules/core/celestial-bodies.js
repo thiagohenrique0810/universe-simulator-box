@@ -159,136 +159,137 @@ export function createCelestialBodies(scene, PLANET_DATA) {
  * @param {Object} planetData - Dados do planeta Saturno
  */
 function createSaturnRings(planet, planetData) {
-    // Criar geometria dos anéis com maior resolução e detalhes
+    // Criar um container para os anéis
+    const ringsContainer = new THREE.Object3D();
+    ringsContainer.name = "aneisSaturnoContainer";
+    
+    // Dimensões dos anéis
     const ringInnerRadius = planetData.radius + 0.3;
     const ringOuterRadius = planetData.radius + 1.5;
-    const ringSegments = 128; // Aumento na resolução
+    const ringSegments = 128; // Alta resolução
     
-    // Criar múltiplos anéis com diferentes tamanhos e opacidades para efeito realista
-    const ringsContainer = new THREE.Object3D();
-    
-    // Anel principal
+    // Usar a geometria de anel padrão do Three.js
     const ringGeometry = new THREE.RingGeometry(
         ringInnerRadius,
         ringOuterRadius,
         ringSegments
     );
     
-    // Modificar o mapeamento UV da geometria para corrigir a orientação da textura
-    const pos = ringGeometry.attributes.position;
-    const uv = ringGeometry.attributes.uv;
+    // Criar uma textura procedural para os anéis
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 1024;
+    const ctx = canvas.getContext('2d');
     
-    for (let i = 0; i < uv.count; i++) {
-        const u = uv.getX(i);
-        const v = uv.getY(i);
+    // Preencher o fundo com transparência
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Definir o centro do canvas
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const maxRadius = Math.min(centerX, centerY);
+    
+    // Desenhar um círculo dourado como base
+    const gradient = ctx.createRadialGradient(centerX, centerY, ringInnerRadius / ringOuterRadius * maxRadius, 
+                                             centerX, centerY, maxRadius);
+    gradient.addColorStop(0, 'rgba(210, 192, 144, 0.9)');
+    gradient.addColorStop(1, 'rgba(210, 192, 144, 0.7)');
+    
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, maxRadius, 0, Math.PI * 2);
+    ctx.arc(centerX, centerY, ringInnerRadius / ringOuterRadius * maxRadius, 0, Math.PI * 2, true);
+    ctx.fill();
+    
+    // Adicionar divisões circulares (como a divisão de Cassini)
+    const ringDivisions = [
+        { pos: 0.4, width: 0.05 },  // Divisão de Cassini (principal)
+        { pos: 0.7, width: 0.03 },
+        { pos: 0.85, width: 0.02 }
+    ];
+    
+    for (const division of ringDivisions) {
+        const divRadius = (ringInnerRadius / ringOuterRadius * maxRadius) + 
+                         (maxRadius - ringInnerRadius / ringOuterRadius * maxRadius) * division.pos;
         
-        // Inverter as coordenadas U para que a textura seja circular e não radial
-        // Usar posição X,Z para calcular o ângulo theta
-        const x = pos.getX(i);
-        const z = pos.getZ(i);
-        const theta = Math.atan2(z, x);
-        
-        // Normalizar theta de -PI a PI para 0 a 1
-        const newU = (theta + Math.PI) / (Math.PI * 2);
-        
-        // Garantir transição suave no ponto de emenda (0/1)
-        uv.setXY(i, newU, v);
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, divRadius, 0, Math.PI * 2);
+        ctx.lineWidth = division.width * maxRadius;
+        ctx.strokeStyle = 'rgba(0,0,0,0.8)';
+        ctx.stroke();
     }
     
-    // Indicar que as coordenadas UV foram modificadas
-    uv.needsUpdate = true;
-    
-    // Criar textura de ruído para simular divisões e variações nos anéis
-    const ringCanvas = document.createElement('canvas');
-    ringCanvas.width = 1024;
-    ringCanvas.height = 64;
-    const ctx = ringCanvas.getContext('2d');
-    
-    // Preencher com gradiente
-    const grd = ctx.createLinearGradient(0, 0, 1024, 0);
-    grd.addColorStop(0, '#ac9975');
-    grd.addColorStop(0.4, '#c2b280');
-    grd.addColorStop(0.5, '#d0c090');
-    grd.addColorStop(0.6, '#c2b280');
-    grd.addColorStop(1, '#ac9975');
-    
-    ctx.fillStyle = grd;
-    ctx.fillRect(0, 0, 1024, 64);
-    
-    // Adicionar divisões nos anéis (lacunas)
-    // Divisão de Cassini
-    ctx.fillStyle = 'rgba(0,0,0,0.9)';
-    ctx.fillRect(512, 0, 20, 64);
-    
-    // Outras divisões menores
-    ctx.fillStyle = 'rgba(0,0,0,0.7)';
-    ctx.fillRect(256, 0, 10, 64);
-    ctx.fillRect(768, 0, 8, 64);
-    
-    // Adicionar ruído e variações
+    // Adicionar variações sutis de textura
     for (let i = 0; i < 2000; i++) {
-        const x = Math.floor(Math.random() * 1024);
-        const y = Math.floor(Math.random() * 64);
-        const size = Math.floor(Math.random() * 3) + 1;
-        const opacity = 0.3 + Math.random() * 0.5;
+        const angle = Math.random() * Math.PI * 2;
+        const distance = ringInnerRadius / ringOuterRadius * maxRadius + 
+                        Math.random() * (maxRadius - ringInnerRadius / ringOuterRadius * maxRadius);
         
-        ctx.fillStyle = `rgba(0,0,0,${opacity})`;
-        ctx.fillRect(x, y, size, size);
+        // Verificar se estamos em uma divisão
+        let inDivision = false;
+        for (const division of ringDivisions) {
+            const divRadius = (ringInnerRadius / ringOuterRadius * maxRadius) + 
+                             (maxRadius - ringInnerRadius / ringOuterRadius * maxRadius) * division.pos;
+            
+            if (Math.abs(distance - divRadius) < division.width * maxRadius / 2) {
+                inDivision = true;
+                break;
+            }
+        }
+        
+        if (!inDivision) {
+            const x = centerX + Math.cos(angle) * distance;
+            const y = centerY + Math.sin(angle) * distance;
+            const size = Math.random() * 2 + 1;
+            
+            if (Math.random() > 0.5) {
+                ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.15})`;
+            } else {
+                ctx.fillStyle = `rgba(0,0,0,${Math.random() * 0.2})`;
+            }
+            
+            ctx.fillRect(x - size/2, y - size/2, size, size);
+        }
     }
     
-    // Criar textura a partir do canvas
-    const ringTexture = new THREE.CanvasTexture(ringCanvas);
-    ringTexture.wrapS = THREE.RepeatWrapping;
-    ringTexture.repeat.x = 5; // Aumentar repetição para maior detalhamento circular
+    // Criar a textura a partir do canvas
+    const ringTexture = new THREE.CanvasTexture(canvas);
+    ringTexture.wrapS = THREE.ClampToEdgeWrapping;
+    ringTexture.wrapT = THREE.ClampToEdgeWrapping;
     
     // Material para os anéis
     const ringMaterial = new THREE.MeshBasicMaterial({
         map: ringTexture,
-        side: THREE.DoubleSide,
         transparent: true,
+        side: THREE.DoubleSide,
         opacity: 0.9
     });
     
+    // Criar o mesh do anel
     const ring = new THREE.Mesh(ringGeometry, ringMaterial);
-    ring.rotation.x = Math.PI / 2;
     ring.name = "aneisSaturno";
     
-    // Adicionar pequena rotação para criar inclinação nos anéis
+    // Rotacionar para ficar no plano horizontal
+    ring.rotation.x = Math.PI / 2;
+    
+    // Adicionar inclinação característica dos anéis de Saturno
     ring.rotation.z = THREE.MathUtils.degToRad(5);
     
+    // Adicionar o anel ao container
     ringsContainer.add(ring);
     
-    // Adicionar sombra dos anéis (parte inferior - sombra projetada nos anéis)
-    const shadowRingGeometry = new THREE.RingGeometry(
-        ringInnerRadius,
-        ringOuterRadius,
-        ringSegments
+    // Adicionar sombra sutil abaixo dos anéis
+    const shadowRing = new THREE.Mesh(
+        ringGeometry.clone(),
+        new THREE.MeshBasicMaterial({
+            color: 0x000000,
+            transparent: true,
+            opacity: 0.3,
+            side: THREE.DoubleSide,
+            blending: THREE.MultiplyBlending
+        })
     );
     
-    // Aplicar o mesmo mapeamento UV na geometria da sombra
-    const shadowPos = shadowRingGeometry.attributes.position;
-    const shadowUv = shadowRingGeometry.attributes.uv;
-    
-    for (let i = 0; i < shadowUv.count; i++) {
-        const x = shadowPos.getX(i);
-        const z = shadowPos.getZ(i);
-        const theta = Math.atan2(z, x);
-        const newU = (theta + Math.PI) / (Math.PI * 2);
-        
-        shadowUv.setXY(i, newU, shadowUv.getY(i));
-    }
-    
-    shadowUv.needsUpdate = true;
-    
-    const shadowRingMaterial = new THREE.MeshBasicMaterial({
-        color: 0x000000,
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.3,
-        blending: THREE.MultiplyBlending
-    });
-    
-    const shadowRing = new THREE.Mesh(shadowRingGeometry, shadowRingMaterial);
     shadowRing.rotation.x = Math.PI / 2;
     shadowRing.rotation.z = THREE.MathUtils.degToRad(5.2); // Ligeiramente diferente
     shadowRing.position.y = -0.05; // Ligeiramente deslocada para baixo
