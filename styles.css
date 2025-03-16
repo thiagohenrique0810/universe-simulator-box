@@ -53,6 +53,9 @@ p {
     font-family: Arial, sans-serif;
     z-index: 1000;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    transition: transform 0.4s ease, opacity 0.3s ease;
+    transform: translateX(0);
+    opacity: 1;
 }
 
 /* Estilizar a barra de rolagem */
@@ -545,4 +548,52 @@ button.control-button:hover {
     max-height: 0;
     opacity: 0;
     padding: 0;
+}
+
+/* Botão para mostrar/ocultar controles */
+#toggle-controls-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: rgba(40, 40, 50, 0.8);
+    border: 2px solid rgba(80, 80, 150, 0.6);
+    color: white;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1100;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+#toggle-controls-btn:hover {
+    background-color: rgba(60, 60, 80, 0.9);
+    transform: scale(1.05);
+}
+
+/* Animação para o ícone do botão */
+.toggle-icon-rotate {
+    transition: transform 0.3s ease;
+}
+
+.toggle-icon-rotate.open {
+    transform: rotate(180deg);
+}
+
+/* Estado oculto para o painel de controles */
+#controls-container.hidden {
+    transform: translateX(320px);
+    opacity: 0;
+}
+
+/* Transição para o painel de controles */
+#controls-container {
+    transition: transform 0.4s ease, opacity 0.3s ease;
+    transform: translateX(0);
+    opacity: 1;
 } 
