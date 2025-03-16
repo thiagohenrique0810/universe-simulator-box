@@ -9,6 +9,7 @@ let simulationSpeed = 0.1; // Velocidade inicial da simulação ajustada para 0.
 // Variáveis para controle de visibilidade
 let orbitLinesVisible = true;
 let starsVisible = true;
+let skyboxVisible = true; // Nova variável para controle do skybox
 let asteroidBeltVisible = true;
 let saturnRingsVisible = true;
 let asteroidBeltRingVisible = true;
@@ -158,6 +159,19 @@ export function createSimulationControls(callbacks) {
     );
     checkboxContainer.appendChild(starsCheckbox);
     
+    // Checkbox para o skybox (Via Láctea)
+    const skyboxCheckbox = createCheckbox(
+        'Via Láctea (Fundo)', 
+        skyboxVisible, 
+        function(isChecked) {
+            skyboxVisible = isChecked;
+            if (callbacks.toggleSkyboxVisibility) {
+                callbacks.toggleSkyboxVisibility(isChecked);
+            }
+        }
+    );
+    checkboxContainer.appendChild(skyboxCheckbox);
+    
     // Checkbox para cinturão de asteroides
     const asteroidsCheckbox = createCheckbox(
         'Cinturão de Asteroides', 
@@ -206,6 +220,7 @@ export function createSimulationControls(callbacks) {
         simulationSpeed,
         orbitLinesVisible,
         starsVisible,
+        skyboxVisible,
         asteroidBeltVisible,
         saturnRingsVisible,
         asteroidBeltRingVisible
@@ -259,13 +274,14 @@ export function setSimulationSpeed(speed) {
 }
 
 /**
- * Retorna o estado de visibilidade dos elementos
+ * Retorna o estado atual de visibilidade dos elementos
  * @returns {Object} Estado de visibilidade
  */
 export function getVisibilityState() {
     return {
         orbitLinesVisible,
         starsVisible,
+        skyboxVisible,
         asteroidBeltVisible,
         saturnRingsVisible,
         asteroidBeltRingVisible

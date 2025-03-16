@@ -23,7 +23,7 @@ import {
     toggleAsteroidBeltVisibility, 
     toggleBeltRingVisibility
 } from './modules/core/asteroids.js';
-import { createStars, toggleStarsVisibility } from './modules/core/stars.js';
+import { createStars, toggleStarsVisibility, toggleSkyboxVisibility } from './modules/core/stars.js';
 
 // Importação dos módulos de UI
 import { setupPlanetSelection, updateCameraFocus } from './modules/ui/planet-selection.js';
@@ -40,12 +40,14 @@ import { applyFavicon, applyStaticFavicon } from '../img/favicon.js';
 let scene, camera, renderer, controls;
 let planets = {};
 let frameCount = 0;
-let asteroidBelt, beltRing, stars;
+let asteroidBelt, beltRing, stars, skybox;
 
 /**
  * Inicializa o sistema solar
  */
 function init() {
+    console.log('Inicializando o simulador do sistema solar');
+    
     // Inicializar o sistema de renderização
     const renderSystem = initRenderer();
     scene = renderSystem.scene;
@@ -67,8 +69,11 @@ function init() {
     ajustarVelocidadesKeplerianas(PLANET_DATA);
     
     // Criar o campo de estrelas
+    console.log('Criando campo de estrelas e skybox...');
     const starsSystem = createStars(scene);
     stars = starsSystem.stars;
+    skybox = starsSystem.skybox;
+    console.log('Skybox criado:', skybox);
     
     // Criar planetas, sol e luas
     planets = createCelestialBodies(scene, PLANET_DATA);
@@ -97,9 +102,11 @@ function init() {
     setupBackgroundMusic();
     
     // Configurar controles de visibilidade
+    console.log('Configurando controles de visibilidade...');
     createSimulationControls({
         toggleOrbitsVisibility,
         toggleStarsVisibility,
+        toggleSkyboxVisibility,
         toggleAsteroidBeltVisibility,
         toggleBeltRingVisibility,
         toggleSaturnRingsVisibility

@@ -5,6 +5,7 @@
 
 // Variáveis de renderização
 let scene, camera, renderer, controls;
+let frameCount = 0;
 
 /**
  * Inicializa o sistema de renderização
@@ -13,6 +14,7 @@ let scene, camera, renderer, controls;
 export function initRenderer() {
     // Criar a cena
     scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000); // Definir cor de fundo como preto
     
     // Configurar a câmera
     const aspectRatio = window.innerWidth / window.innerHeight;
@@ -23,6 +25,7 @@ export function initRenderer() {
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setClearColor(0x000000, 1); // Definir cor de limpeza como preto
     document.getElementById('scene-container').appendChild(renderer.domElement);
     
     // Adicionar controles de órbita
@@ -70,6 +73,26 @@ export function updateControls() {
  */
 export function renderScene() {
     if (renderer && scene && camera) {
+        // A cada 100 frames, verificar se o skybox está visível
+        if (frameCount % 100 === 0) {
+            const skybox = scene.children.find(child => 
+                child.geometry && 
+                child.geometry.type === 'SphereGeometry' && 
+                child.geometry.parameters.radius === 1000
+            );
+            
+            if (skybox) {
+                console.log('Status do skybox (frame ' + frameCount + '):', 
+                    'visível:', skybox.visible, 
+                    'material:', skybox.material ? 'sim' : 'não',
+                    'textura:', skybox.material && skybox.material.map ? 'sim' : 'não'
+                );
+            } else {
+                console.log('Skybox não encontrado na cena (frame ' + frameCount + ')');
+            }
+        }
+        
         renderer.render(scene, camera);
+        frameCount++;
     }
 } 
