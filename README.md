@@ -28,7 +28,13 @@ Um simulador 3D interativo do Sistema Solar desenvolvido com Three.js, que permi
 - **Sistema de Busca**: Busca rápida por planetas, luas e outros objetos celestes
 - **Modo Noturno**: Interface com opção de modo escuro e filtro de luz azul ajustável
 - **Ferramenta de Medição**: Sistema para medir distâncias entre corpos celestes com cálculos de tempo de viagem
-- **Simulador de Missões Espaciais**: Visualização de trajetórias de missões espaciais históricas e planejadas
+- **Simulador de Missões Espaciais**: Visualização de trajetórias de missões espaciais históricas e planejadas, com sistema interativo para:
+  - Ativar/desativar missões individualmente com um clique
+  - Visualizar todas as missões simultaneamente ou ocultar todas
+  - Acessar detalhes completos das missões (objetivos, conquistas, datas) com clique duplo
+  - Filtrar missões por categoria (todas, ativas, planejadas)
+  - Integração com o sistema de visibilidade global para gerenciar eficientemente a renderização
+  - Mostrar/ocultar o painel de missões espaciais através do controle de visibilidade
 - **Modo VR**: Suporte para exploração em realidade virtual com dispositivos compatíveis com WebXR
 - **Controles de Visibilidade**: Ative/desative a visualização de:
   - Linhas de órbita
@@ -90,6 +96,15 @@ cd universe-simulator-box
   - Ative o modo VR para exploração imersiva (se disponível)
   - Use a ferramenta de medição para calcular distâncias entre objetos
   - Explore missões espaciais históricas e suas trajetórias
+
+- **Controle de Missões Espaciais**:
+  - Ative/desative a visualização de missões no painel de controle de visibilidade
+  - Clique em uma missão na lista para mostrar/ocultar sua trajetória
+  - Use o duplo clique em uma missão para abrir o painel de detalhes
+  - Use o seletor de categoria para filtrar missões por tipo (todas/ativas/planejadas)
+  - Use os botões "Mostrar Todas as Missões" ou "Ocultar Todas as Missões" para controle rápido
+  - Consulte detalhes como data de lançamento, veículo, velocidade, objetivos e conquistas
+  - Acesse links para sites oficiais das missões através do painel de detalhes
 
 ## Estrutura do Projeto
 
@@ -175,3 +190,18 @@ cd universe-simulator-box
 - Criar versão PWA (Progressive Web App) com funcionamento offline
 - Adicionar modo de visualização em escala real
 - Implementar captura de vídeos além dos screenshots existentes
+- Expandir o sistema de missões espaciais com:
+  - Visualização detalhada dos instrumentos científicos de cada sonda
+  - Animação de eventos-chave de cada missão (aterrissagens, sobrevoos)
+  - Sistema de previsão de posições futuras com base em dados reais
+  - Linha do tempo interativa com marcos importantes de cada missão
+  - Indicadores visuais do estado atual de comunicação com cada sonda
+
+## Atualizações Recentes
+
+- **Sistema de Missões Espaciais Aprimorado**: 
+  - Melhorias na sincronização entre controles e visualização 3D
+  - Correções no sistema de visibilidade das missões
+  - Integração entre painéis de controle e sistema de visibilidade global
+  - Otimização do gerenciamento de ativação/desativação de missões
+  - Aprimoramento da estrutura de código com separação clara de responsabilidades
