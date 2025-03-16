@@ -464,6 +464,165 @@ export const PLANET_DATA = {
                     }
                 ]
             }
-        ]
+        ],
+        
+        // Objetos clássicos e menores do Cinturão de Kuiper
+        objetosMenores: {
+            // Objetos Clássicos do Cinturão (Cubewanos)
+            objetosClassicos: [
+                {
+                    id: "quaoar",
+                    nome: "Quaoar",
+                    radius: 0.084,
+                    color: 0xbb8866,
+                    distance: 430,
+                    semiMajorAxis: 430,
+                    eccentricity: 0.04,
+                    orbitalSpeed: 0.000024,
+                    rotationSpeed: 0.017,
+                    inclination: 8.0,
+                    orbitColor: 0x996644,
+                    tipo: "Objeto Clássico",
+                    composicao: "Gelo e rocha",
+                    temperatura: "-220°C",
+                    diametro: "1,110 km",
+                    orbita: "288 anos terrestres",
+                    textureUrl: 'textures/quaoar.jpg'
+                },
+                {
+                    id: "orcus",
+                    nome: "Orcus",
+                    radius: 0.07,
+                    color: 0xaaaaaa,
+                    distance: 395,
+                    semiMajorAxis: 395,
+                    eccentricity: 0.22,
+                    orbitalSpeed: 0.000025,
+                    rotationSpeed: 0.01,
+                    inclination: 20.6,
+                    orbitColor: 0x887766,
+                    tipo: "Objeto Clássico",
+                    composicao: "Gelo e rocha",
+                    temperatura: "-230°C",
+                    diametro: "910 km"
+                },
+                {
+                    id: "salacia",
+                    nome: "Salacia",
+                    radius: 0.06,
+                    color: 0xaaddee,
+                    distance: 420,
+                    semiMajorAxis: 420,
+                    eccentricity: 0.10,
+                    orbitalSpeed: 0.000023,
+                    rotationSpeed: 0.015,
+                    inclination: 23.9,
+                    orbitColor: 0x88aaaa,
+                    tipo: "Objeto Clássico",
+                    composicao: "Gelo de água",
+                    temperatura: "-235°C",
+                    diametro: "850 km",
+                    satellites: [
+                        {
+                            name: 'actaea',
+                            radius: 0.019,
+                            color: 0xccddee,
+                            distance: 0.25,
+                            orbitalSpeed: 0.02,
+                            rotationSpeed: 0.01,
+                            eccentricity: 0.0
+                        }
+                    ]
+                }
+            ],
+            
+            // Objetos Ressonantes (em ressonância orbital com Netuno)
+            objetosRessonantes: [
+                {
+                    id: "ixion",
+                    nome: "Ixion",
+                    radius: 0.057,
+                    color: 0xdd6633,
+                    distance: 390,
+                    semiMajorAxis: 390,
+                    eccentricity: 0.24,
+                    orbitalSpeed: 0.000025,
+                    rotationSpeed: 0.012,
+                    inclination: 19.6,
+                    orbitColor: 0xaa6644,
+                    tipo: "Objeto Ressonante 3:2",
+                    composicao: "Gelo e material orgânico",
+                    temperatura: "-220°C",
+                    diametro: "650 km"
+                },
+                {
+                    id: "varuna",
+                    nome: "Varuna",
+                    radius: 0.055,
+                    color: 0xbbbb88,
+                    distance: 430,
+                    semiMajorAxis: 430,
+                    eccentricity: 0.05,
+                    orbitalSpeed: 0.000024,
+                    rotationSpeed: 0.058, // Rotação rápida
+                    inclination: 17.2,
+                    orbitColor: 0x998866,
+                    tipo: "Objeto Ressonante",
+                    composicao: "Gelo e rocha",
+                    temperatura: "-230°C",
+                    diametro: "900 km (alongado)"
+                }
+            ],
+            
+            // Objetos do Disco Disperso
+            discoDisperso: [
+                {
+                    id: "sedna",
+                    nome: "Sedna",
+                    radius: 0.075,
+                    color: 0xff4422,
+                    distance: 520,
+                    semiMajorAxis: 756,
+                    eccentricity: 0.84,
+                    orbitalSpeed: 0.000008,
+                    rotationSpeed: 0.010,
+                    inclination: 11.9,
+                    orbitColor: 0xcc3322,
+                    tipo: "Objeto do Disco Disperso",
+                    composicao: "Gelo e material orgânico vermelho",
+                    temperatura: "-240°C",
+                    diametro: "995 km",
+                    textureUrl: 'textures/sedna.jpg'
+                },
+                {
+                    id: "gonggong",
+                    nome: "Gonggong",
+                    radius: 0.064,
+                    color: 0xcc6644,
+                    distance: 480,
+                    semiMajorAxis: 600,
+                    eccentricity: 0.50,
+                    orbitalSpeed: 0.000012,
+                    rotationSpeed: 0.009,
+                    inclination: 30.7,
+                    orbitColor: 0xbb5533,
+                    tipo: "Objeto do Disco Disperso",
+                    composicao: "Gelo e rocha",
+                    temperatura: "-235°C",
+                    diametro: "750 km",
+                    satellites: [
+                        {
+                            name: 'xiangliu',
+                            radius: 0.015,
+                            color: 0xddccbb,
+                            distance: 0.2,
+                            orbitalSpeed: 0.02,
+                            rotationSpeed: 0.01,
+                            eccentricity: 0.0
+                        }
+                    ]
+                }
+            ]
+        }
     }
 }; 

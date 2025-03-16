@@ -368,16 +368,137 @@ export function showDwarfPlanetInfo(dwarfPlanetId) {
 }
 
 /**
- * Encontra um planeta anão pelo seu ID nos dados do sistema solar
- * @param {String} id - ID do planeta anão
- * @returns {Object|null} Objeto com dados do planeta anão ou null se não encontrado
+ * Mostra informações sobre um objeto menor do Cinturão de Kuiper
+ * @param {String} objectId - ID do objeto
+ */
+export function showKuiperObjectInfo(objectId) {
+    if (!infoPanel || !infoContent) return;
+    
+    // Obter dados do objeto do PLANET_DATA
+    const kuiperObject = findKuiperObjectById(objectId);
+    
+    if (!kuiperObject) {
+        console.error(`Objeto do Cinturão de Kuiper com ID '${objectId}' não encontrado`);
+        return;
+    }
+    
+    // Construir HTML com informações do objeto
+    const html = `
+        <div class="info-header">
+            <h2>${kuiperObject.nome}</h2>
+            <span class="planet-type">${kuiperObject.tipo || 'Objeto do Cinturão de Kuiper'}</span>
+        </div>
+        
+        <div class="info-stats">
+            <div class="stat">
+                <span class="stat-label">Diâmetro:</span>
+                <span class="stat-value">${kuiperObject.diametro || 'Não disponível'}</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Distância do Sol:</span>
+                <span class="stat-value">${formatDistanceToSun(kuiperObject.distance)}</span>
+            </div>
+            ${kuiperObject.orbita ? `
+            <div class="stat">
+                <span class="stat-label">Período Orbital:</span>
+                <span class="stat-value">${kuiperObject.orbita}</span>
+            </div>
+            ` : ''}
+            <div class="stat">
+                <span class="stat-label">Excentricidade:</span>
+                <span class="stat-value">${kuiperObject.eccentricity ? kuiperObject.eccentricity.toFixed(2) : 'Desconhecida'}</span>
+            </div>
+            ${kuiperObject.inclinacao ? `
+            <div class="stat">
+                <span class="stat-label">Inclinação Orbital:</span>
+                <span class="stat-value">${kuiperObject.inclinacao}°</span>
+            </div>
+            ` : ''}
+            ${kuiperObject.composicao ? `
+            <div class="stat">
+                <span class="stat-label">Composição:</span>
+                <span class="stat-value">${kuiperObject.composicao}</span>
+            </div>
+            ` : ''}
+            ${kuiperObject.temperatura ? `
+            <div class="stat">
+                <span class="stat-label">Temperatura:</span>
+                <span class="stat-value">${kuiperObject.temperatura}</span>
+            </div>
+            ` : ''}
+        </div>
+        
+        <div class="info-description">
+            <p>${kuiperObject.descricao || `${kuiperObject.nome} é um objeto do Cinturão de Kuiper, região além de Netuno, a aproximadamente ${kuiperObject.distance} unidades astronômicas do Sol.`}</p>
+        </div>
+        
+        <div class="info-footer">
+            <button id="close-info" class="info-button">Fechar</button>
+            <button id="more-info" class="info-button">Mais Informações</button>
+        </div>
+    `;
+    
+    // Atualizar conteúdo do painel
+    infoContent.innerHTML = html;
+    
+    // Mostrar o painel
+    infoPanel.classList.add('visible');
+    
+    // Adicionar eventos para botões
+    document.getElementById('close-info').addEventListener('click', () => {
+        infoPanel.classList.remove('visible');
+    });
+    
+    document.getElementById('more-info').addEventListener('click', () => {
+        // Abrir Wikipedia ou outra fonte para mais informações
+        let searchTerm = `${kuiperObject.nome} objeto cinturão kuiper`;
+        window.open(`https://www.google.com/search?q=${encodeURIComponent(searchTerm)}`, '_blank');
+    });
+}
+
+/**
+ * Busca um planeta anão ou objeto menor do Cinturão de Kuiper pelo ID
+ * @param {String} id - ID do objeto a buscar
+ * @returns {Object|null} - Objeto encontrado ou null
  */
 function findDwarfPlanetById(id) {
-    if (!window.PLANET_DATA || !window.PLANET_DATA.cinturaoKuiper || !window.PLANET_DATA.cinturaoKuiper.planetasAnoes) {
+    if (!window.PLANET_DATA || !window.PLANET_DATA.cinturaoKuiper) {
         return null;
     }
     
-    return window.PLANET_DATA.cinturaoKuiper.planetasAnoes.find(planet => planet.id === id);
+    // Buscar entre os planetas anões
+    if (window.PLANET_DATA.cinturaoKuiper.planetasAnoes) {
+        const dwarfPlanet = window.PLANET_DATA.cinturaoKuiper.planetasAnoes.find(planet => planet.id === id);
+        if (dwarfPlanet) return dwarfPlanet;
+    }
+    
+    // Se não encontrar nos planetas anões, buscar nos objetos menores
+    return findKuiperObjectById(id);
+}
+
+/**
+ * Busca um objeto menor do Cinturão de Kuiper pelo ID
+ * @param {String} id - ID do objeto a buscar
+ * @returns {Object|null} - Objeto encontrado ou null
+ */
+function findKuiperObjectById(id) {
+    if (!window.PLANET_DATA || !window.PLANET_DATA.cinturaoKuiper || !window.PLANET_DATA.cinturaoKuiper.objetosMenores) {
+        return null;
+    }
+    
+    const objetosMenores = window.PLANET_DATA.cinturaoKuiper.objetosMenores;
+    
+    // Buscar em cada categoria de objetos
+    const categorias = ['objetosClassicos', 'objetosRessonantes', 'discoDisperso'];
+    
+    for (const categoria of categorias) {
+        if (objetosMenores[categoria] && Array.isArray(objetosMenores[categoria])) {
+            const objeto = objetosMenores[categoria].find(obj => obj.id === id);
+            if (objeto) return objeto;
+        }
+    }
+    
+    return null;
 }
 
 /**

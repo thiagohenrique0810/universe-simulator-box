@@ -14,6 +14,8 @@ let neptuneRingsVisible = true;
 let asteroidBeltRingVisible = true;
 let shadowsVisible = true;
 let eclipsesEnabled = true;
+let kuiperBeltVisible = true;
+let kuiperBeltSmallObjectsVisible = true;
 
 /**
  * Cria os controles de visibilidade para elementos do sistema solar
@@ -100,6 +102,18 @@ export function createVisibilityControls(container, initiallyOpen = true) {
             label: 'Eclipses',
             eventName: 'toggle-eclipses',
             defaultChecked: true
+        },
+        {
+            id: 'show-kuiper-belt',
+            label: 'Cinturão de Kuiper',
+            eventName: 'toggle-kuiper-belt',
+            defaultChecked: true
+        },
+        {
+            id: 'show-kuiper-small-objects',
+            label: 'Objetos Menores de Kuiper',
+            eventName: 'toggle-kuiper-small-objects',
+            defaultChecked: true
         }
     ];
     
@@ -156,6 +170,8 @@ export function getVisibilityState() {
         neptuneRingsVisible,
         asteroidBeltRingVisible,
         shadowsVisible,
-        eclipsesEnabled
+        eclipsesEnabled,
+        kuiperBeltVisible,
+        kuiperBeltSmallObjectsVisible
     };
 } 

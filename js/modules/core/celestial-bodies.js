@@ -173,6 +173,18 @@ export function createCelestialBodies(scene, PLANET_DATA) {
         createKuiperBeltObjects(scene, PLANET_DATA.cinturaoKuiper);
     }
     
+    // Criar planetas anões e objetos do Cinturão de Kuiper
+    if (PLANET_DATA.cinturaoKuiper) {
+        console.log('Criando objetos do Cinturão de Kuiper...');
+        createKuiperBeltObjects(scene, PLANET_DATA.cinturaoKuiper);
+        
+        // Criar também os objetos menores
+        if (PLANET_DATA.cinturaoKuiper.objetosMenores) {
+            console.log('Criando objetos menores do Cinturão de Kuiper...');
+            createKuiperBeltSmallObjects(scene, PLANET_DATA.cinturaoKuiper.objetosMenores);
+        }
+    }
+    
     // Tentar carregar texturas
     loadTextures(PLANET_DATA);
     
@@ -838,4 +850,277 @@ function createPlanetRings(planet, planetData, ringsData) {
     
     // Adicionar o container dos anéis ao planeta
     planet.add(ringsContainer);
+}
+
+/**
+ * Cria os objetos menores do Cinturão de Kuiper
+ * @param {Object} scene - Cena Three.js
+ * @param {Object} objetosMenores - Dados dos objetos menores do Cinturão de Kuiper
+ */
+function createKuiperBeltSmallObjects(scene, objetosMenores) {
+    const textureLoader = new THREE.TextureLoader();
+    
+    // Função auxiliar para criar um objeto individual
+    function createSmallObject(objectData, objectType) {
+        console.log(`Criando objeto ${objectType}: ${objectData.nome}`);
+        
+        // Verificar dados essenciais
+        if (!objectData.id || !objectData.radius || !objectData.distance) {
+            console.warn(`Dados insuficientes para criar o objeto ${objectData.nome}`);
+            return;
+        }
+        
+        // Criar geometria do objeto
+        const objectGeometry = new THREE.SphereGeometry(objectData.radius, 24, 24);
+        
+        // Determinar material baseado na textura ou cor
+        let objectMaterial;
+        if (objectData.textureUrl) {
+            objectMaterial = new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                roughness: 0.7,
+                metalness: 0.1
+            });
+            
+            // Tentar carregar a textura
+            textureLoader.load(
+                objectData.textureUrl,
+                function(texture) {
+                    objectMaterial.map = texture;
+                    objectMaterial.needsUpdate = true;
+                },
+                undefined,
+                function(err) {
+                    console.warn(`Erro ao carregar textura para ${objectData.nome}:`, err);
+                    // Usar cor especificada ou cor padrão
+                    objectMaterial.color.set(objectData.color || 0xaaaaaa);
+                }
+            );
+        } else {
+            // Se não tiver textura, usar cor diretamente
+            objectMaterial = new THREE.MeshStandardMaterial({
+                color: objectData.color || 0xaaaaaa,
+                roughness: 0.7,
+                metalness: 0.1
+            });
+        }
+        
+        // Criar o objeto 3D
+        const object = new THREE.Mesh(objectGeometry, objectMaterial);
+        object.name = objectData.id;
+        
+        // Definir um ângulo baseado no ID ou aleatório
+        const seed = objectData.id.charCodeAt(0) + objectData.id.charCodeAt(objectData.id.length - 1);
+        const angle = (seed % 100) / 100 * Math.PI * 2;
+        
+        // Criar órbita visual
+        const orbitParams = createPlanetOrbit(scene, objectData.id, objectData);
+        
+        // Posicionar o objeto - uso de excentricidade para objetos mais externos
+        if (objectData.eccentricity > 0.3) {
+            // Para objetos de alta excentricidade, posicioná-los em pontos diferentes da órbita
+            const trueAnomaly = (seed % 360) * Math.PI / 180; // Ângulo na órbita
+            const semiMajorAxis = objectData.semiMajorAxis || objectData.distance;
+            const semiMinorAxis = semiMajorAxis * Math.sqrt(1 - Math.pow(objectData.eccentricity, 2));
+            const distance = semiMajorAxis * (1 - Math.pow(objectData.eccentricity, 2)) / 
+                            (1 + objectData.eccentricity * Math.cos(trueAnomaly));
+            
+            object.position.x = Math.cos(angle + trueAnomaly) * distance;
+            object.position.z = Math.sin(angle + trueAnomaly) * distance * Math.cos(THREE.MathUtils.degToRad(objectData.inclination || 0));
+            object.position.y = Math.sin(angle + trueAnomaly) * distance * Math.sin(THREE.MathUtils.degToRad(objectData.inclination || 0));
+        } else {
+            // Para objetos de baixa excentricidade, usar posicionamento mais simples
+            object.position.x = Math.cos(angle) * objectData.distance;
+            object.position.z = Math.sin(angle) * objectData.distance;
+            
+            // Aplicar inclinação, se definida
+            if (objectData.inclination) {
+                const inclinationRad = THREE.MathUtils.degToRad(objectData.inclination);
+                object.position.y = Math.sin(angle) * objectData.distance * Math.tan(inclinationRad);
+            }
+        }
+        
+        // Adicionar dados para rotação e órbita
+        object.userData = {
+            angle: angle,
+            distance: objectData.distance,
+            rotationSpeed: objectData.rotationSpeed || 0.005,
+            orbitalSpeed: objectData.orbitalSpeed || 0.00001,
+            semiMajorAxis: objectData.semiMajorAxis || objectData.distance,
+            eccentricity: objectData.eccentricity || 0,
+            radius: objectData.radius,
+            tipo: objectData.tipo || objectType
+        };
+        
+        // Adicionar o objeto à cena
+        scene.add(object);
+        planets[objectData.id] = object;
+        
+        // Adicionar satélites (luas), se houver
+        if (objectData.satellites && Array.isArray(objectData.satellites)) {
+            objectData.satellites.forEach(satellite => {
+                createMoon(object, satellite);
+            });
+        }
+        
+        return object;
+    }
+    
+    // Processar objetos clássicos
+    if (objetosMenores.objetosClassicos && Array.isArray(objetosMenores.objetosClassicos)) {
+        objetosMenores.objetosClassicos.forEach(objectData => {
+            createSmallObject(objectData, "Objeto Clássico");
+        });
+    }
+    
+    // Processar objetos ressonantes
+    if (objetosMenores.objetosRessonantes && Array.isArray(objetosMenores.objetosRessonantes)) {
+        objetosMenores.objetosRessonantes.forEach(objectData => {
+            createSmallObject(objectData, "Objeto Ressonante");
+        });
+    }
+    
+    // Processar objetos do disco disperso
+    if (objetosMenores.discoDisperso && Array.isArray(objetosMenores.discoDisperso)) {
+        objetosMenores.discoDisperso.forEach(objectData => {
+            createSmallObject(objectData, "Objeto do Disco Disperso");
+        });
+    }
+    
+    // Criar nuvem de objetos menores aleatórios para cada região
+    createRandomKuiperBeltPopulation(scene, "classico", 40, 410, 450, 0.1, 10, 0.01);
+    createRandomKuiperBeltPopulation(scene, "ressonante", 30, 380, 400, 0.25, 25, 0.02);
+    createRandomKuiperBeltPopulation(scene, "disperso", 25, 480, 650, 0.5, 40, 0.04);
+}
+
+/**
+ * Cria uma população aleatória de pequenos objetos do Cinturão de Kuiper
+ * @param {Object} scene - Cena Three.js
+ * @param {String} region - Região ('classico', 'ressonante', 'disperso')
+ * @param {Number} count - Número de objetos a criar
+ * @param {Number} minDistance - Distância mínima do Sol
+ * @param {Number} maxDistance - Distância máxima do Sol
+ * @param {Number} maxEccentricity - Excentricidade máxima das órbitas
+ * @param {Number} maxInclination - Inclinação máxima das órbitas em graus
+ * @param {Number} sizeVariation - Variação de tamanho (0-1)
+ */
+function createRandomKuiperBeltPopulation(scene, region, count, minDistance, maxDistance, maxEccentricity, maxInclination, sizeVariation) {
+    console.log(`Criando população de objetos pequenos da região ${region} do Cinturão de Kuiper (${count} objetos)`);
+    
+    // Cores base para cada região
+    const regionColors = {
+        classico: new THREE.Color(0xaabbcc),  // Azulado
+        ressonante: new THREE.Color(0xccbbaa), // Acastanhado
+        disperso: new THREE.Color(0xbbaacc)    // Avermelhado
+    };
+    
+    // Geometria compartilhada para economizar memória
+    const smallGeometry = new THREE.SphereGeometry(0.025, 8, 8);
+    
+    // Container para agrupar todos os objetos pequenos
+    const container = new THREE.Object3D();
+    container.name = `kuiperBelt_${region}_small`;
+    scene.add(container);
+    
+    // Registrar o container
+    planets[`kuiperBelt_${region}`] = container;
+    
+    // Criar lote de objetos pequenos
+    for (let i = 0; i < count; i++) {
+        // Determinar distância aleatória dentro do intervalo
+        const distance = minDistance + Math.random() * (maxDistance - minDistance);
+        
+        // Parâmetros orbitais
+        const eccentricity = Math.random() * maxEccentricity;
+        const inclination = Math.random() * maxInclination;
+        const angle = Math.random() * Math.PI * 2; // Ângulo inicial aleatório
+        const trueAnomaly = Math.random() * Math.PI * 2; // Posição na órbita aleatória
+        
+        // Tamanho aleatório com variação
+        const size = 0.015 + Math.random() * sizeVariation * 0.03;
+        
+        // Velocidade orbital baseada na distância (mais distante = mais lento)
+        const orbitalSpeed = 0.00002 * (400 / distance);
+        
+        // Cor derivada da cor base com variação
+        const baseColor = regionColors[region] || new THREE.Color(0xaaaaaa);
+        const colorVariation = 0.2; // Variação de 20% na cor
+        const objectColor = new THREE.Color(
+            baseColor.r * (1 - colorVariation / 2 + Math.random() * colorVariation),
+            baseColor.g * (1 - colorVariation / 2 + Math.random() * colorVariation),
+            baseColor.b * (1 - colorVariation / 2 + Math.random() * colorVariation)
+        );
+        
+        // Material com variação de cor
+        const material = new THREE.MeshStandardMaterial({
+            color: objectColor,
+            roughness: 0.8,
+            metalness: 0.1
+        });
+        
+        // Criar o objeto
+        const object = new THREE.Mesh(smallGeometry, material);
+        object.name = `kuiperObj_${region}_${i}`;
+        
+        // Calcular posição na órbita elíptica
+        let posX, posY, posZ;
+        
+        if (eccentricity > 0.1) {
+            // Para órbitas elípticas
+            const semiMajorAxis = distance;
+            const semiMinorAxis = semiMajorAxis * Math.sqrt(1 - Math.pow(eccentricity, 2));
+            
+            // Calcular distância no ponto específico da órbita
+            const r = semiMajorAxis * (1 - Math.pow(eccentricity, 2)) / 
+                      (1 + eccentricity * Math.cos(trueAnomaly));
+            
+            // Posição na órbita
+            posX = Math.cos(angle + trueAnomaly) * r;
+            
+            // Considerar inclinação
+            if (inclination > 0) {
+                const incRad = THREE.MathUtils.degToRad(inclination);
+                posZ = Math.sin(angle + trueAnomaly) * r * Math.cos(incRad);
+                posY = Math.sin(angle + trueAnomaly) * r * Math.sin(incRad);
+            } else {
+                posZ = Math.sin(angle + trueAnomaly) * r;
+                posY = 0;
+            }
+        } else {
+            // Para órbitas quase circulares, simplificar
+            posX = Math.cos(angle) * distance;
+            
+            if (inclination > 0) {
+                const incRad = THREE.MathUtils.degToRad(inclination);
+                posZ = Math.sin(angle) * distance * Math.cos(incRad);
+                posY = Math.sin(angle) * distance * Math.sin(incRad);
+            } else {
+                posZ = Math.sin(angle) * distance;
+                posY = 0;
+            }
+        }
+        
+        // Posicionar objeto
+        object.position.set(posX, posY, posZ);
+        
+        // Adicionar dados para animação
+        object.userData = {
+            angle: angle,
+            distance: distance,
+            orbitalSpeed: orbitalSpeed,
+            rotationSpeed: 0.01 + Math.random() * 0.02,
+            eccentricity: eccentricity,
+            semiMajorAxis: distance,
+            trueAnomaly: trueAnomaly,
+            inclination: inclination,
+            radius: size,
+            isKuiperObject: true,
+            region: region
+        };
+        
+        // Adicionar ao container
+        container.add(object);
+    }
+    
+    return container;
 } 

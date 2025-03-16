@@ -21,6 +21,7 @@ let selectionCamera = null;
 let onShowPlanetInfo = null;
 let onShowMoonInfo = null;
 let onShowDwarfPlanetInfo = null;
+let onShowKuiperObjectInfo = null;
 
 // Adicionar variável de estado para o modo de comparação
 let comparisonMode = false;
@@ -32,6 +33,10 @@ let comparisonMode = false;
  * @param {Function} showPlanetInfoCallback - Callback para exibir informações do planeta
  * @param {Function} showMoonInfoCallback - Callback para exibir informações da lua
  * @param {Function} showDwarfPlanetInfoCallback - Callback para exibir informações do planeta anão
+ * @param {Object} renderer - Renderizador ThreeJS
+ * @param {Object} planets - Objeto contendo referências a todos os planetas
+ * @param {Object} camera_utils - Utilitários de câmera
+ * @param {Function} showKuiperObjectInfoCallback - Callback para exibir informações de objetos do Cinturão de Kuiper (opcional)
  */
 export function setupPlanetSelection(
     scene, 
@@ -41,7 +46,8 @@ export function setupPlanetSelection(
     showDwarfPlanetInfoCallback,
     renderer,
     planets,
-    camera_utils
+    camera_utils,
+    showKuiperObjectInfoCallback
 ) {
     // Armazenar referências
     selectionScene = scene;
@@ -51,16 +57,13 @@ export function setupPlanetSelection(
     onShowPlanetInfo = showPlanetInfoCallback;
     onShowMoonInfo = showMoonInfoCallback;
     onShowDwarfPlanetInfo = showDwarfPlanetInfoCallback;
+    onShowKuiperObjectInfo = showKuiperObjectInfoCallback;
     
-    // Configurar eventos de mouse com os parâmetros necessários
-    if (renderer && planets) {
-        setupMouseEvents(camera, scene, renderer, planets, camera_utils);
-    } else {
-        console.warn('Renderer ou planets não fornecidos ao setupPlanetSelection, eventos de mouse não serão configurados');
-    }
+    // Configurar evento de clique para seleção
+    setupMouseEvents(camera, scene, renderer, planets, camera_utils);
     
-    // Configurar evento personalizado para foco via busca
-    setupCustomEvents();
+    // Adicionar evento de clique ao canvas
+    renderer.domElement.addEventListener('dblclick', (event) => handleObjectClick(event));
 }
 
 /**
@@ -69,7 +72,7 @@ export function setupPlanetSelection(
 function setupCustomEvents() {
     // Escutar evento 'focus-object' disparado pelo sistema de busca
     document.addEventListener('focus-object', function(event) {
-        const { objectKey, objectName, isMoon, isDwarfPlanet } = event.detail;
+        const { objectKey, objectName, isMoon, isDwarfPlanet, isKuiperObject } = event.detail;
         
         // Localizar o objeto na cena
         let targetObject;
@@ -128,6 +131,23 @@ function setupCustomEvents() {
                 focusOnObject(targetObject, selectionCamera);
                 if (onShowDwarfPlanetInfo) {
                     onShowDwarfPlanetInfo(objectName);
+                }
+            }
+        } else if (isKuiperObject) {
+            // Buscar objeto do Cinturão de Kuiper
+            targetObject = selectionScene.getObjectByName(objectName.toLowerCase());
+            
+            // Se não encontrou pelo nome, tenta pelo ID
+            if (!targetObject) {
+                const kuiperId = objectName.toLowerCase().replace(/\s+/g, '-');
+                targetObject = selectionScene.getObjectByName(kuiperId);
+            }
+            
+            // Se encontrou o objeto, mostrar informações
+            if (targetObject) {
+                focusOnObject(targetObject, selectionCamera);
+                if (onShowKuiperObjectInfo) {
+                    onShowKuiperObjectInfo(objectName);
                 }
             }
         } else {
@@ -300,7 +320,33 @@ export function setupMouseEvents(camera, scene, renderer, planets, camera_utils)
             return false;
         }
         
-        return PLANET_DATA.cinturaoKuiper.planetasAnoes.some(planet => planet.id === name);
+        return PLANET_DATA.cinturaoKuiper.planetasAnoes.some(planet => 
+            planet.id === name || planet.nome.toLowerCase() === name.toLowerCase()
+        );
+    };
+    
+    // Verifica se o objeto é um objeto do Cinturão de Kuiper
+    const isKuiperObject = (name) => {
+        if (!PLANET_DATA || !PLANET_DATA.cinturaoKuiper || !PLANET_DATA.cinturaoKuiper.objetosMenores) {
+            return false;
+        }
+        
+        const objetosMenores = PLANET_DATA.cinturaoKuiper.objetosMenores;
+        
+        // Verificar em cada categoria de objetos do Cinturão de Kuiper
+        const categorias = ['objetosClassicos', 'objetosRessonantes', 'discoDisperso'];
+        
+        for (const categoria of categorias) {
+            if (objetosMenores[categoria] && Array.isArray(objetosMenores[categoria])) {
+                if (objetosMenores[categoria].some(obj => 
+                    obj.id === name || obj.nome.toLowerCase() === name.toLowerCase()
+                )) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     };
     
     // Função para detectar cliques nos planetas
@@ -322,7 +368,7 @@ export function setupMouseEvents(camera, scene, renderer, planets, camera_utils)
             
             console.log(`Clicou no objeto: ${objectName}`);
             
-            // Determinando se é um planeta, lua ou outro objeto celeste
+            // Determinando se é um planeta, lua, planeta anão ou outro objeto celeste
             if (objectName === 'sol') {
                 // Mostra informações do sol
                 if (onShowPlanetInfo) {
@@ -334,6 +380,20 @@ export function setupMouseEvents(camera, scene, renderer, planets, camera_utils)
                 if (onShowDwarfPlanetInfo) {
                     onShowDwarfPlanetInfo(objectName);
                 }
+                
+                // Destacar e mover câmera para o planeta anão
+                highlightObject(clickedObject);
+                moveToObject(clickedObject, camera_utils);
+            } else if (isKuiperObject(objectName)) {
+                // É um objeto do Cinturão de Kuiper
+                console.log(`Objeto do Cinturão de Kuiper detectado: ${objectName}`);
+                if (onShowKuiperObjectInfo) {
+                    onShowKuiperObjectInfo(objectName);
+                }
+                
+                // Destacar e mover câmera para o objeto
+                highlightObject(clickedObject);
+                moveToObject(clickedObject, camera_utils);
             } else if (isMoon(objectName)) {
                 // É uma lua
                 console.log(`Lua detectada: ${objectName}`);
@@ -342,6 +402,10 @@ export function setupMouseEvents(camera, scene, renderer, planets, camera_utils)
                 if (parentPlanet && onShowMoonInfo) {
                     onShowMoonInfo(objectName, parentPlanet);
                 }
+                
+                // Destacar e mover câmera para a lua
+                highlightObject(clickedObject);
+                moveToObject(clickedObject, camera_utils);
             } else {
                 // É um planeta
                 console.log(`Planeta detectado: ${objectName}`);

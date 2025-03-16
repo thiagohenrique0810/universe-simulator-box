@@ -405,6 +405,38 @@ function setupControlEvents() {
             console.log(`Intensidade solar ajustada para: ${intensity.toFixed(1)}`);
         }
     });
+
+    // Eventos para o Cinturão de Kuiper
+    document.addEventListener('toggle-kuiper-belt', function(event) {
+        const visible = event.detail.visible;
+        // Ocultar/mostrar os planetas anões principais (Plutão, Eris, etc.)
+        for (const planetName in planets) {
+            const planet = planets[planetName];
+            if (planet.userData && planet.userData.isDwarfPlanet) {
+                planet.visible = visible;
+                // Também ajustar visibilidade das órbitas
+                const orbit = orbits[planetName];
+                if (orbit) {
+                    orbit.visible = visible && orbitLinesVisible;
+                }
+            }
+        }
+        console.log(`Cinturão de Kuiper ${visible ? 'visível' : 'oculto'}`);
+    });
+
+    document.addEventListener('toggle-kuiper-small-objects', function(event) {
+        const visible = event.detail.visible;
+        // Ocultar/mostrar objetos menores do Cinturão de Kuiper
+        for (const objectName in planets) {
+            if (objectName.startsWith('kuiperBelt_')) {
+                const container = planets[objectName];
+                if (container) {
+                    container.visible = visible;
+                }
+            }
+        }
+        console.log(`Objetos menores do Cinturão de Kuiper ${visible ? 'visíveis' : 'ocultos'}`);
+    });
 }
 
 /**
