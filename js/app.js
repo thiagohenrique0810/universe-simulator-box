@@ -24,6 +24,14 @@ import {
     toggleBeltRingVisibility
 } from './modules/core/asteroids.js';
 import { createStars, toggleStarsVisibility, toggleSkyboxVisibility } from './modules/core/stars.js';
+import {
+    initGravityPhysics,
+    updateGravityPhysics,
+    setPhysicsEnabled,
+    isPhysicsEnabled,
+    setGravitationalStrength,
+    resetOrbits
+} from './modules/core/gravity-physics.js';
 
 // Importação dos módulos de UI
 import { setupPlanetSelection, updateCameraFocus, setComparisonMode } from './modules/ui/planet-selection.js';
@@ -42,6 +50,7 @@ let scene, camera, renderer, controls;
 let planets = {};
 let frameCount = 0;
 let asteroidBelt, beltRing, stars, skybox;
+let lastTime = 0;
 
 /**
  * Inicializa o sistema solar
@@ -104,14 +113,7 @@ function init() {
     
     // Configurar controles de visibilidade
     console.log('Configurando controles de visibilidade...');
-    createSimulationControls({
-        toggleOrbitsVisibility,
-        toggleStarsVisibility,
-        toggleSkyboxVisibility,
-        toggleAsteroidBeltVisibility,
-        toggleBeltRingVisibility,
-        toggleSaturnRingsVisibility
-    });
+    createSimulationControls();
     
     // Inicializar sistema de comparação de planetas
     console.log('Configurando sistema de comparação de planetas...');
@@ -122,6 +124,12 @@ function init() {
         const isActive = event.detail.active;
         setComparisonMode(isActive);
     });
+    
+    // Inicializar a física avançada
+    initGravityPhysics(planets, PLANET_DATA);
+    
+    // Configurar eventos dos controles
+    setupControlEvents();
     
     // Iniciar a animação
     animate();
@@ -136,27 +144,89 @@ function init() {
 }
 
 /**
- * Controla a visibilidade dos anéis de Saturno
- * @param {Boolean} visible - Estado de visibilidade
+ * Configura os eventos dos controles da simulação
  */
-function toggleSaturnRingsVisibility(visible) {
-    const saturno = scene.getObjectByName('saturno');
-    if (saturno) {
-        const ringsContainer = saturno.children.find(child => 
-            child.children.length > 0 && 
-            child.children[0].geometry.type === 'RingGeometry'
-        );
-        
-                if (ringsContainer) {
-            ringsContainer.visible = visible;
+function setupControlEvents() {
+    // Eventos de visibilidade
+    document.addEventListener('toggle-orbits-visibility', function(e) {
+        toggleOrbitsVisibility(e.detail.visible);
+    });
+    
+    document.addEventListener('toggle-stars-visibility', function(e) {
+        toggleStarsVisibility(e.detail.visible);
+    });
+    
+    document.addEventListener('toggle-skybox-visibility', function(e) {
+        toggleSkyboxVisibility(e.detail.visible);
+    });
+    
+    document.addEventListener('toggle-asteroid-belt-visibility', function(e) {
+        toggleAsteroidBeltVisibility(e.detail.visible);
+    });
+    
+    document.addEventListener('toggle-belt-ring-visibility', function(e) {
+        toggleBeltRingVisibility(e.detail.visible);
+    });
+    
+    document.addEventListener('toggle-saturn-rings-visibility', function(e) {
+        const planets = getPlanets();
+        if (planets.saturno) {
+            const saturnRings = planets.saturno.children.find(child => child.userData && child.userData.isSaturnRings);
+            if (saturnRings) {
+                saturnRings.visible = e.detail.visible;
+            }
         }
+    });
+    
+    // Eventos do modo de comparação
+    document.addEventListener('comparison-mode-changed', function(e) {
+        setComparisonMode(e.detail.isActive);
+    });
+    
+    // Eventos do sistema de física avançada
+    document.addEventListener('physics-enabled-changed', function(e) {
+        setPhysicsEnabled(e.detail.enabled);
+    });
+    
+    document.addEventListener('gravity-strength-changed', function(e) {
+        setGravitationalStrength(e.detail.strength);
+    });
+    
+    document.addEventListener('reset-orbits', function() {
+        const planets = getPlanets();
+        resetOrbits(planets, PLANET_DATA);
+    });
+}
+
+/**
+ * Calcula o intervalo de tempo desde o último frame
+ * @param {Number} timestamp - Timestamp atual
+ * @returns {Number} - Intervalo de tempo em segundos
+ */
+function calculateDeltaTime(timestamp) {
+    // Se é o primeiro frame, retornar um valor padrão
+    if (lastTime === 0) {
+        lastTime = timestamp;
+        return 1/60; // ~16.7ms (60fps)
     }
+    
+    // Calcular diferença de tempo em segundos
+    const deltaTime = (timestamp - lastTime) / 1000;
+    lastTime = timestamp;
+    
+    // Limitar delta para evitar saltos muito grandes (por exemplo, após aba inativa)
+    return Math.min(deltaTime, 0.1);
 }
 
 /**
  * Loop de animação principal
+ * @param {Number} timestamp - Timestamp atual do navegador
  */
-function animate() {
+function animate(timestamp) {
+    // Calcular diferença de tempo desde o último frame
+    const deltaTime = calculateDeltaTime(timestamp);
+    
+    // Solicitar próximo frame de animação
     requestAnimationFrame(animate);
     
     // Atualizar controles da câmera
@@ -166,7 +236,13 @@ function animate() {
     const simulationSpeed = getSimulationSpeed();
     
     // Atualizar posições dos planetas
-    updatePlanetPositions(planets, simulationSpeed);
+    if (isPhysicsEnabled()) {
+        // Usar modelo de física avançada com gravidade real
+        updateGravityPhysics(planets, deltaTime, simulationSpeed);
+    } else {
+        // Usar modelo de órbitas predefinidas
+        updatePlanetPositions(planets, simulationSpeed);
+    }
     
     // Atualizar cinturão de asteroides
     updateAsteroidBelt(simulationSpeed);

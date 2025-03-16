@@ -10,20 +10,20 @@ Este documento lista as melhorias planejadas para o simulador do sistema solar, 
 
 ## 1. Sistema de Física Avançado
 
-- [ ] **Gravidade Real**: Implementar simulação de gravidade entre corpos celestes
-  - [ ] Adicionar cálculos baseados na Lei da Gravitação Universal
-  - [ ] Permitir que órbitas sejam afetadas pela gravidade de outros corpos
-  - [ ] Implementar perturbações orbitais realistas
+- [x] **Gravidade Real**: Implementar simulação de gravidade entre corpos celestes
+  - [x] Adicionar cálculos baseados na Lei da Gravitação Universal
+  - [x] Permitir que órbitas sejam afetadas pela gravidade de outros corpos
+  - [x] Implementar perturbações orbitais realistas
 
 - [ ] **Sistema de Colisões**: Adicionar detecção e resposta a colisões
   - [ ] Implementar colisões entre asteroides
   - [ ] Adicionar efeitos visuais para colisões (explosões, fragmentação)
   - [ ] Permitir que colisões afetem órbitas e trajetórias
 
-- [ ] **Parâmetros Ajustáveis**: Permitir que o usuário modifique parâmetros físicos
-  - [ ] Adicionar controles para ajustar massa dos corpos celestes
-  - [ ] Implementar controle de intensidade da gravidade
-  - [ ] Adicionar opção para desativar/ativar física realista
+- [x] **Parâmetros Ajustáveis**: Permitir que o usuário modifique parâmetros físicos
+  - [x] Adicionar controles para ajustar massa dos corpos celestes
+  - [x] Implementar controle de intensidade da gravidade
+  - [x] Adicionar opção para desativar/ativar física realista
 
 ## 2. Modo Educacional
 
@@ -202,10 +202,15 @@ Este documento lista as melhorias planejadas para o simulador do sistema solar, 
 **Arquivos modificados:** js/modules/ui/planet-comparison.js, js/modules/ui/planet-selection.js, js/app.js, styles.css
 **Observações:** O sistema permite selecionar até 3 objetos (planetas, luas ou planetas anões) e comparar suas propriedades físicas em uma tabela interativa. Destaca valores máximos e mínimos, exibe descrições e permite uma fácil visualização lado a lado de características como diâmetro, massa, distância do Sol, etc.
 
+### [16/03/2023] - [Gravidade Real]
+**Descrição:** Implementado sistema de física avançada com simulação de gravidade real entre corpos celestes.
+**Arquivos modificados:** js/modules/core/gravity-physics.js, js/modules/ui/simulation-controls.js, js/app.js, styles.css
+**Observações:** O sistema implementa a Lei da Gravitação Universal de Newton para simular as interações gravitacionais entre os corpos celestes. Inclui controles para ativar/desativar o sistema, ajustar a intensidade da gravidade e resetar as órbitas. As órbitas dos planetas e luas agora são afetadas pela influência gravitacional de outros corpos, criando perturbações orbitais realistas.
+
 ---
 
 ## Prioridades para Próxima Iteração
 
-1. Adicionar melhorias na física do sistema (gravidade real)
-2. Expandir o sistema solar com objetos do cinturão de Kuiper
-3. Implementar efeitos atmosféricos para planetas com atmosfera 
+1. Expandir o sistema solar com objetos do cinturão de Kuiper
+2. Implementar efeitos atmosféricos para planetas com atmosfera
+3. Adicionar sistema de colisões 

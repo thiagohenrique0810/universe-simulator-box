@@ -18,35 +18,44 @@ let asteroidBeltRingVisible = true;
 let visibilityCallbacks = {};
 
 /**
- * Cria os controles de simulação e visibilidade
- * @param {Object} toggleCallbacks - Funções para alternar a visibilidade de elementos
+ * Cria o painel de controles da simulação
+ * @returns {HTMLElement} Container dos controles
  */
-export function createSimulationControls({
-    toggleOrbitsVisibility,
-    toggleStarsVisibility,
-    toggleSkyboxVisibility,
-    toggleAsteroidBeltVisibility,
-    toggleBeltRingVisibility,
-    toggleSaturnRingsVisibility
-}) {
-    console.log('Criando controles de simulação...');
-    
-    // Criar o container principal para todos os controles
+export function createSimulationControls() {
+    // Criar container para controles
     const controlsContainer = createControlsContainer();
     
-    // Criar os diferentes grupos de controles
-    createSpeedControls(controlsContainer);
-    createVisibilityControls({
-        toggleOrbitsVisibility,
-        toggleStarsVisibility,
-        toggleSkyboxVisibility,
-        toggleAsteroidBeltVisibility,
-        toggleBeltRingVisibility,
-        toggleSaturnRingsVisibility
-    }, controlsContainer);
+    // Título principal
+    const mainTitle = document.createElement('h2');
+    mainTitle.textContent = 'Controles da Simulação';
+    mainTitle.style.textAlign = 'center';
+    mainTitle.style.margin = '0 0 15px 0';
+    mainTitle.style.borderBottom = '2px solid #555';
+    mainTitle.style.paddingBottom = '8px';
+    controlsContainer.appendChild(mainTitle);
+    
+    // Criar controles de velocidade (inicialmente aberto)
+    createSpeedControls(controlsContainer, true);
+    
+    // Criar controles de visibilidade
+    createVisibilityControls(controlsContainer);
+    
+    // Criar controles de captura de mídia
     createCaptureControls(controlsContainer);
+    
+    // Criar controles de modo noturno
     createNightModeControls(controlsContainer);
+    
+    // Criar controles de comparação de planetas
+    createComparisonControls(controlsContainer);
+    
+    // Criar controles de física avançada
+    createPhysicsControls(controlsContainer);
+    
+    // Criar controles de busca (sempre visível)
     createSearchControls(controlsContainer);
+    
+    return controlsContainer;
 }
 
 /**
@@ -69,21 +78,63 @@ function createControlsContainer() {
 }
 
 /**
+ * Cria uma seção de controle no formato acordeão
+ * @param {HTMLElement} container - Container para a seção
+ * @param {String} title - Título da seção
+ * @param {Boolean} initiallyOpen - Se a seção deve iniciar aberta
+ * @returns {Object} - Objetos contendo o header, content e a seção completa
+ */
+function createAccordionSection(container, title, initiallyOpen = false) {
+    // Criar a seção
+    const section = document.createElement('section');
+    section.className = 'controls-section';
+    container.appendChild(section);
+    
+    // Criar o cabeçalho clicável
+    const header = document.createElement('div');
+    header.className = initiallyOpen ? 'section-header' : 'section-header closed';
+    section.appendChild(header);
+    
+    // Título da seção
+    const headerTitle = document.createElement('h3');
+    headerTitle.textContent = title;
+    header.appendChild(headerTitle);
+    
+    // Ícone de expansão/contração
+    const toggleIcon = document.createElement('span');
+    toggleIcon.className = 'toggle-icon';
+    toggleIcon.textContent = '▼';
+    header.appendChild(toggleIcon);
+    
+    // Conteúdo da seção
+    const content = document.createElement('div');
+    content.className = initiallyOpen ? 'section-content' : 'section-content closed';
+    section.appendChild(content);
+    
+    // Adicionar evento de clique para expandir/contrair
+    header.addEventListener('click', function() {
+        const isClosed = header.classList.toggle('closed');
+        content.classList.toggle('closed', isClosed);
+    });
+    
+    return { section, header, content };
+}
+
+/**
  * Cria os controles de velocidade da simulação
  * @param {HTMLElement} controlsContainer - Container para os controles
+ * @param {Boolean} initiallyOpen - Se a seção deve iniciar aberta
  */
-function createSpeedControls(controlsContainer) {
+function createSpeedControls(controlsContainer, initiallyOpen = false) {
     // Se não foi fornecido um container, criar ou obter um
     controlsContainer = controlsContainer || createControlsContainer();
     
-    // Seção de controles de velocidade
-    const speedSection = document.createElement('div');
-    speedSection.className = 'control-section';
-    
-    // Título
-    const speedTitle = document.createElement('h3');
-    speedTitle.textContent = 'Velocidade da Simulação';
-    speedSection.appendChild(speedTitle);
+    // Criar seção acordeão
+    const { content } = createAccordionSection(
+        controlsContainer, 
+        'Velocidade da Simulação', 
+        initiallyOpen
+    );
     
     // Container para o slider e o valor
     const sliderContainer = document.createElement('div');
@@ -113,7 +164,7 @@ function createSpeedControls(controlsContainer) {
     
     sliderContainer.appendChild(speedSlider);
     sliderContainer.appendChild(speedValue);
-    speedSection.appendChild(sliderContainer);
+    content.appendChild(sliderContainer);
     
     // Adicionar botões de controle rápido
     const buttonsContainer = document.createElement('div');
@@ -157,36 +208,24 @@ function createSpeedControls(controlsContainer) {
     buttonsContainer.appendChild(stopButton);
     buttonsContainer.appendChild(normalButton);
     buttonsContainer.appendChild(fastButton);
-    speedSection.appendChild(buttonsContainer);
-    
-    // Adicionar ao container principal
-    controlsContainer.appendChild(speedSection);
+    content.appendChild(buttonsContainer);
 }
 
 /**
  * Cria os controles de visibilidade
- * @param {Object} toggleCallbacks - Funções para alternar a visibilidade de elementos
- * @param {HTMLElement} controlsContainer - Container para os controles
+ * @param {HTMLElement} container - Container para os controles
+ * @param {Boolean} initiallyOpen - Se a seção deve iniciar aberta
  */
-function createVisibilityControls({
-    toggleOrbitsVisibility,
-    toggleStarsVisibility,
-    toggleSkyboxVisibility,
-    toggleAsteroidBeltVisibility,
-    toggleBeltRingVisibility,
-    toggleSaturnRingsVisibility
-}, controlsContainer) {
+function createVisibilityControls(container, initiallyOpen = false) {
     // Se não foi fornecido um container, criar ou obter um
-    controlsContainer = controlsContainer || createControlsContainer();
+    container = container || createControlsContainer();
     
-    // Seção de controles de visibilidade
-    const visibilitySection = document.createElement('div');
-    visibilitySection.className = 'control-section';
-    
-    // Título
-    const visibilityTitle = document.createElement('h3');
-    visibilityTitle.textContent = 'Visibilidade';
-    visibilitySection.appendChild(visibilityTitle);
+    // Criar seção acordeão
+    const { content } = createAccordionSection(
+        container, 
+        'Visibilidade', 
+        initiallyOpen
+    );
     
     // Container para os checkboxes
     const checkboxContainer = document.createElement('div');
@@ -198,11 +237,11 @@ function createVisibilityControls({
     const orbitCheckbox = createCheckbox(
         'Linhas de Órbita', 
         orbitLinesVisible, 
-        function(isChecked) {
-            orbitLinesVisible = isChecked;
-            if (toggleOrbitsVisibility) {
-                toggleOrbitsVisibility(isChecked);
-            }
+        function(checked) {
+            orbitLinesVisible = checked;
+            document.dispatchEvent(new CustomEvent('toggle-orbits-visibility', {
+                detail: { visible: checked }
+            }));
         }
     );
     checkboxContainer.appendChild(orbitCheckbox);
@@ -211,50 +250,50 @@ function createVisibilityControls({
     const starsCheckbox = createCheckbox(
         'Estrelas', 
         starsVisible, 
-        function(isChecked) {
-            starsVisible = isChecked;
-            if (toggleStarsVisibility) {
-                toggleStarsVisibility(isChecked);
-            }
+        function(checked) {
+            starsVisible = checked;
+            document.dispatchEvent(new CustomEvent('toggle-stars-visibility', {
+                detail: { visible: checked }
+            }));
         }
     );
     checkboxContainer.appendChild(starsCheckbox);
     
-    // Checkbox para o skybox (Via Láctea)
+    // Checkbox para skybox
     const skyboxCheckbox = createCheckbox(
         'Via Láctea (Fundo)', 
         skyboxVisible, 
-        function(isChecked) {
-            skyboxVisible = isChecked;
-            if (toggleSkyboxVisibility) {
-                toggleSkyboxVisibility(isChecked);
-            }
+        function(checked) {
+            skyboxVisible = checked;
+            document.dispatchEvent(new CustomEvent('toggle-skybox-visibility', {
+                detail: { visible: checked }
+            }));
         }
     );
     checkboxContainer.appendChild(skyboxCheckbox);
     
     // Checkbox para cinturão de asteroides
-    const asteroidsCheckbox = createCheckbox(
+    const asteroidBeltCheckbox = createCheckbox(
         'Cinturão de Asteroides', 
         asteroidBeltVisible, 
-        function(isChecked) {
-            asteroidBeltVisible = isChecked;
-            if (toggleAsteroidBeltVisibility) {
-                toggleAsteroidBeltVisibility(isChecked);
-            }
+        function(checked) {
+            asteroidBeltVisible = checked;
+            document.dispatchEvent(new CustomEvent('toggle-asteroid-belt-visibility', {
+                detail: { visible: checked }
+            }));
         }
     );
-    checkboxContainer.appendChild(asteroidsCheckbox);
+    checkboxContainer.appendChild(asteroidBeltCheckbox);
     
-    // Checkbox para representação visual do cinturão de asteroides (anel)
+    // Checkbox para anel do cinturão
     const beltRingCheckbox = createCheckbox(
         'Anel do Cinturão', 
         asteroidBeltRingVisible, 
-        function(isChecked) {
-            asteroidBeltRingVisible = isChecked;
-            if (toggleBeltRingVisibility) {
-                toggleBeltRingVisibility(isChecked);
-            }
+        function(checked) {
+            asteroidBeltRingVisible = checked;
+            document.dispatchEvent(new CustomEvent('toggle-belt-ring-visibility', {
+                detail: { visible: checked }
+            }));
         }
     );
     checkboxContainer.appendChild(beltRingCheckbox);
@@ -263,19 +302,16 @@ function createVisibilityControls({
     const saturnRingsCheckbox = createCheckbox(
         'Anéis de Saturno', 
         saturnRingsVisible, 
-        function(isChecked) {
-            saturnRingsVisible = isChecked;
-            if (toggleSaturnRingsVisibility) {
-                toggleSaturnRingsVisibility(isChecked);
-            }
+        function(checked) {
+            saturnRingsVisible = checked;
+            document.dispatchEvent(new CustomEvent('toggle-saturn-rings-visibility', {
+                detail: { visible: checked }
+            }));
         }
     );
     checkboxContainer.appendChild(saturnRingsCheckbox);
     
-    visibilitySection.appendChild(checkboxContainer);
-    
-    // Adicionar ao container principal
-    controlsContainer.appendChild(visibilitySection);
+    content.appendChild(checkboxContainer);
 }
 
 /**
@@ -342,29 +378,33 @@ export function getVisibilityState() {
 /**
  * Cria os controles de captura de mídia (screenshots)
  * @param {HTMLElement} controlsContainer - Container para os controles
+ * @param {Boolean} initiallyOpen - Se a seção deve iniciar aberta
  */
-function createCaptureControls(controlsContainer) {
+function createCaptureControls(controlsContainer, initiallyOpen = false) {
     // Se não foi fornecido um container, criar ou obter um
     controlsContainer = controlsContainer || createControlsContainer();
     
-    // Criar seção para captura de mídia
-    const captureSection = document.createElement('div');
-    captureSection.className = 'control-section';
-    
-    // Título da seção
-    const captureTitle = document.createElement('h3');
-    captureTitle.textContent = 'Captura de Mídia';
-    captureSection.appendChild(captureTitle);
+    // Criar seção acordeão
+    const { content } = createAccordionSection(
+        controlsContainer, 
+        'Captura de Mídia', 
+        initiallyOpen
+    );
     
     // Botão para capturar screenshot
     const screenshotButton = document.createElement('button');
     screenshotButton.textContent = '📷 Capturar Screenshot';
     screenshotButton.className = 'control-button';
+    screenshotButton.style.width = '100%';
+    screenshotButton.style.padding = '8px';
+    screenshotButton.style.backgroundColor = '#2c3e50';
+    screenshotButton.style.border = 'none';
+    screenshotButton.style.borderRadius = '4px';
+    screenshotButton.style.color = 'white';
+    screenshotButton.style.cursor = 'pointer';
+    screenshotButton.style.marginTop = '5px';
     screenshotButton.addEventListener('click', captureScreenshot);
-    captureSection.appendChild(screenshotButton);
-    
-    // Adicionar seção ao container
-    controlsContainer.appendChild(captureSection);
+    content.appendChild(screenshotButton);
 }
 
 /**
@@ -448,40 +488,45 @@ function showTemporaryMessage(message, isError = false) {
 /**
  * Cria os controles para o modo noturno
  * @param {HTMLElement} controlsContainer - Container para os controles
+ * @param {Boolean} initiallyOpen - Se a seção deve iniciar aberta
  */
-function createNightModeControls(controlsContainer) {
+function createNightModeControls(controlsContainer, initiallyOpen = false) {
     // Se não foi fornecido um container, criar ou obter um
     controlsContainer = controlsContainer || createControlsContainer();
     
-    // Criar seção para modo noturno
-    const nightModeSection = document.createElement('div');
-    nightModeSection.className = 'control-section';
-    
-    // Título da seção
-    const nightModeTitle = document.createElement('h3');
-    nightModeTitle.textContent = 'Conforto Visual';
-    nightModeSection.appendChild(nightModeTitle);
+    // Criar seção acordeão
+    const { content } = createAccordionSection(
+        controlsContainer, 
+        'Conforto Visual', 
+        initiallyOpen
+    );
     
     // Checkbox para modo noturno
-    const nightModeLabel = document.createElement('label');
-    nightModeLabel.className = 'control-checkbox';
+    const nightModeContainer = document.createElement('div');
+    nightModeContainer.style.display = 'flex';
+    nightModeContainer.style.alignItems = 'center';
+    nightModeContainer.style.marginBottom = '10px';
     
     const nightModeCheckbox = document.createElement('input');
     nightModeCheckbox.type = 'checkbox';
     nightModeCheckbox.checked = isNightModeActive();
+    nightModeCheckbox.style.margin = '0 5px 0 0';
     nightModeCheckbox.addEventListener('change', function() {
         toggleNightMode(this.checked);
     });
     
-    nightModeLabel.appendChild(nightModeCheckbox);
-    nightModeLabel.appendChild(document.createTextNode('Modo Noturno'));
-    nightModeSection.appendChild(nightModeLabel);
+    const nightModeLabel = document.createElement('label');
+    nightModeLabel.textContent = 'Modo Noturno';
+    
+    nightModeContainer.appendChild(nightModeCheckbox);
+    nightModeContainer.appendChild(nightModeLabel);
+    content.appendChild(nightModeContainer);
     
     // Slider para filtro de luz azul
     const blueFilterLabel = document.createElement('div');
     blueFilterLabel.textContent = 'Filtro de Luz Azul:';
     blueFilterLabel.style.marginTop = '10px';
-    nightModeSection.appendChild(blueFilterLabel);
+    content.appendChild(blueFilterLabel);
     
     const blueFilterSlider = document.createElement('input');
     blueFilterSlider.type = 'range';
@@ -492,10 +537,7 @@ function createNightModeControls(controlsContainer) {
     blueFilterSlider.addEventListener('input', function() {
         applyBlueFilter(this.value / 100);
     });
-    nightModeSection.appendChild(blueFilterSlider);
-    
-    // Adicionar seção ao container
-    controlsContainer.appendChild(nightModeSection);
+    content.appendChild(blueFilterSlider);
     
     // Aplicar configurações salvas
     if (isNightModeActive()) {
@@ -600,6 +642,7 @@ function applyBlueFilter(intensity) {
 
 /**
  * Cria o sistema de busca para objetos do sistema solar
+ * Essa seção não é um acordeão para facilitar acesso rápido
  * @param {HTMLElement} controlsContainer - Container para os controles
  */
 function createSearchControls(controlsContainer) {
@@ -610,7 +653,10 @@ function createSearchControls(controlsContainer) {
     import('../data/planet-data.js').then(({ PLANET_DATA }) => {
         // Criar seção para sistema de busca
         const searchSection = document.createElement('div');
-        searchSection.className = 'control-section';
+        searchSection.className = 'controls-section search-section';
+        searchSection.style.marginTop = '15px';
+        searchSection.style.borderTop = '2px solid #555';
+        searchSection.style.paddingTop = '15px';
         
         // Título da seção
         const searchTitle = document.createElement('h3');
@@ -626,12 +672,25 @@ function createSearchControls(controlsContainer) {
         searchInput.type = 'text';
         searchInput.placeholder = 'Buscar planeta, lua ou planeta anão...';
         searchInput.className = 'search-input';
+        searchInput.style.width = '100%';
+        searchInput.style.padding = '8px';
+        searchInput.style.backgroundColor = 'rgba(40, 40, 40, 0.7)';
+        searchInput.style.border = '1px solid #555';
+        searchInput.style.borderRadius = '4px';
+        searchInput.style.color = 'white';
+        searchInput.style.marginTop = '5px';
         searchContainer.appendChild(searchInput);
         
         // Container de resultados
         const resultsContainer = document.createElement('div');
         resultsContainer.className = 'search-results';
         resultsContainer.style.display = 'none';
+        resultsContainer.style.maxHeight = '200px';
+        resultsContainer.style.overflowY = 'auto';
+        resultsContainer.style.marginTop = '5px';
+        resultsContainer.style.backgroundColor = 'rgba(30, 30, 30, 0.9)';
+        resultsContainer.style.border = '1px solid #555';
+        resultsContainer.style.borderRadius = '4px';
         searchContainer.appendChild(resultsContainer);
         
         // Adicionar evento de busca
@@ -721,6 +780,9 @@ function createSearchControls(controlsContainer) {
                 const noResults = document.createElement('div');
                 noResults.className = 'search-no-results';
                 noResults.textContent = 'Nenhum resultado encontrado';
+                noResults.style.padding = '8px';
+                noResults.style.color = '#aaa';
+                noResults.style.textAlign = 'center';
                 resultsContainer.appendChild(noResults);
                 return;
             }
@@ -729,10 +791,25 @@ function createSearchControls(controlsContainer) {
             displayResults.forEach(obj => {
                 const resultItem = document.createElement('div');
                 resultItem.className = 'search-result-item';
+                resultItem.style.padding = '8px';
+                resultItem.style.borderBottom = '1px solid #444';
+                resultItem.style.cursor = 'pointer';
+                resultItem.style.display = 'flex';
+                resultItem.style.alignItems = 'center';
+                
+                // Hover effect
+                resultItem.addEventListener('mouseover', function() {
+                    this.style.backgroundColor = 'rgba(60, 60, 60, 0.7)';
+                });
+                resultItem.addEventListener('mouseout', function() {
+                    this.style.backgroundColor = '';
+                });
                 
                 // Aplicar ícone de acordo com o tipo
                 const icon = document.createElement('span');
                 icon.className = 'search-result-icon';
+                icon.style.marginRight = '8px';
+                icon.style.fontSize = '16px';
                 
                 if (obj.type === 'Planeta') {
                     icon.textContent = '🪐';
@@ -753,11 +830,14 @@ function createSearchControls(controlsContainer) {
                 const nameElement = document.createElement('div');
                 nameElement.className = 'search-result-name';
                 nameElement.textContent = obj.name;
+                nameElement.style.fontWeight = 'bold';
                 infoContainer.appendChild(nameElement);
                 
                 const typeElement = document.createElement('div');
                 typeElement.className = 'search-result-type';
                 typeElement.textContent = obj.parent ? `${obj.type} de ${obj.parent}` : obj.type;
+                typeElement.style.fontSize = '0.8em';
+                typeElement.style.color = '#aaa';
                 infoContainer.appendChild(typeElement);
                 
                 resultItem.appendChild(infoContainer);
@@ -854,5 +934,211 @@ function handleKeyboardNavigation(resultsContainer, searchInput) {
                 searchInput.blur();
                 break;
         }
+    });
+}
+
+/**
+ * Cria controles para o sistema de comparação de planetas
+ * @param {HTMLElement} container - Container dos controles
+ * @param {Boolean} initiallyOpen - Se a seção deve iniciar aberta
+ */
+function createComparisonControls(container, initiallyOpen = false) {
+    // Se não foi fornecido um container, criar ou obter um
+    container = container || createControlsContainer();
+    
+    // Criar seção acordeão
+    const { content } = createAccordionSection(
+        container, 
+        'Comparação de Planetas', 
+        initiallyOpen
+    );
+    
+    // Informação sobre o recurso
+    const infoText = document.createElement('p');
+    infoText.textContent = 'Selecione até 3 objetos para comparar suas características.';
+    infoText.style.fontSize = '0.8em';
+    infoText.style.color = '#aaa';
+    infoText.style.margin = '5px 0';
+    content.appendChild(infoText);
+    
+    // Botão para iniciar comparação
+    const comparisonButton = document.createElement('button');
+    comparisonButton.id = 'comparison-button';
+    comparisonButton.textContent = 'Iniciar Comparação';
+    comparisonButton.className = 'button action-button';
+    comparisonButton.style.width = '100%';
+    comparisonButton.style.padding = '8px';
+    comparisonButton.style.backgroundColor = '#2980b9';
+    comparisonButton.style.border = 'none';
+    comparisonButton.style.borderRadius = '4px';
+    comparisonButton.style.color = 'white';
+    comparisonButton.style.cursor = 'pointer';
+    comparisonButton.style.marginTop = '5px';
+    content.appendChild(comparisonButton);
+    
+    // Evento para o botão de comparação
+    comparisonButton.addEventListener('click', function() {
+        // Disparar evento para iniciar/parar modo de comparação
+        const isActive = comparisonButton.classList.toggle('active');
+        
+        // Atualizar estilo do botão
+        if (isActive) {
+            comparisonButton.style.backgroundColor = '#c0392b';
+            comparisonButton.textContent = 'Cancelar Comparação';
+        } else {
+            comparisonButton.style.backgroundColor = '#2980b9';
+            comparisonButton.textContent = 'Iniciar Comparação';
+        }
+        
+        // Disparar evento de mudança de modo de comparação
+        document.dispatchEvent(new CustomEvent('comparison-mode-changed', {
+            detail: { active: isActive }
+        }));
+    });
+}
+
+/**
+ * Cria os controles de física avançada
+ * @param {HTMLElement} container - Container dos controles
+ * @param {Boolean} initiallyOpen - Se a seção deve iniciar aberta
+ */
+function createPhysicsControls(container, initiallyOpen = false) {
+    // Se não foi fornecido um container, criar ou obter um
+    container = container || createControlsContainer();
+    
+    // Criar seção acordeão
+    const { content } = createAccordionSection(
+        container, 
+        'Física Avançada', 
+        initiallyOpen
+    );
+    
+    // Container para o toggle de física
+    const physicsToggleContainer = document.createElement('div');
+    physicsToggleContainer.className = 'physics-toggle-container';
+    physicsToggleContainer.style.display = 'flex';
+    physicsToggleContainer.style.alignItems = 'center';
+    physicsToggleContainer.style.marginBottom = '10px';
+    
+    // Checkbox para ativar/desativar a física
+    const physicsToggle = document.createElement('input');
+    physicsToggle.type = 'checkbox';
+    physicsToggle.id = 'physics-toggle';
+    physicsToggle.style.margin = '0 5px 0 0';
+    physicsToggleContainer.appendChild(physicsToggle);
+    
+    // Label para o checkbox
+    const physicsLabel = document.createElement('label');
+    physicsLabel.htmlFor = 'physics-toggle';
+    physicsLabel.textContent = 'Gravidade Real';
+    physicsToggleContainer.appendChild(physicsLabel);
+    
+    content.appendChild(physicsToggleContainer);
+    
+    // Informação sobre a gravidade
+    const physicsInfo = document.createElement('p');
+    physicsInfo.className = 'physics-info';
+    physicsInfo.textContent = 'Simula interações gravitacionais entre corpos celestes segundo a Lei da Gravitação Universal.';
+    physicsInfo.style.fontSize = '0.8em';
+    physicsInfo.style.color = '#aaa';
+    physicsInfo.style.marginBottom = '10px';
+    content.appendChild(physicsInfo);
+    
+    // Container para o controle deslizante de intensidade
+    const strengthContainer = document.createElement('div');
+    strengthContainer.className = 'gravity-strength-container';
+    
+    // Label para o controle de intensidade
+    const strengthLabel = document.createElement('label');
+    strengthLabel.htmlFor = 'gravity-strength';
+    strengthLabel.textContent = 'Intensidade da Gravidade:';
+    strengthLabel.style.display = 'block';
+    strengthLabel.style.marginBottom = '5px';
+    strengthContainer.appendChild(strengthLabel);
+    
+    // Container para o slider e o valor
+    const sliderContainer = document.createElement('div');
+    sliderContainer.style.display = 'flex';
+    sliderContainer.style.alignItems = 'center';
+    
+    // Controle deslizante para a intensidade
+    const strengthSlider = document.createElement('input');
+    strengthSlider.type = 'range';
+    strengthSlider.id = 'gravity-strength';
+    strengthSlider.min = '0';
+    strengthSlider.max = '2';
+    strengthSlider.step = '0.1';
+    strengthSlider.value = '1';
+    strengthSlider.className = 'slider';
+    strengthSlider.style.flex = '1';
+    sliderContainer.appendChild(strengthSlider);
+    
+    // Display para o valor atual
+    const strengthValue = document.createElement('span');
+    strengthValue.id = 'gravity-strength-value';
+    strengthValue.textContent = '1.0x';
+    strengthValue.style.marginLeft = '10px';
+    strengthValue.style.width = '35px';
+    sliderContainer.appendChild(strengthValue);
+    
+    // Adicionar o container do slider ao container de intensidade
+    strengthContainer.appendChild(sliderContainer);
+    
+    // Adicionar o container de intensidade à seção de física
+    content.appendChild(strengthContainer);
+    
+    // Botão de reset das órbitas
+    const resetButton = document.createElement('button');
+    resetButton.textContent = 'Resetar Órbitas';
+    resetButton.className = 'reset-button';
+    resetButton.style.marginTop = '10px';
+    resetButton.style.width = '100%';
+    resetButton.style.padding = '5px';
+    resetButton.style.backgroundColor = '#555';
+    resetButton.style.border = 'none';
+    resetButton.style.borderRadius = '3px';
+    resetButton.style.color = 'white';
+    resetButton.style.cursor = 'pointer';
+    content.appendChild(resetButton);
+    
+    // Inicialmente desativar o controle de intensidade
+    strengthContainer.style.opacity = '0.5';
+    strengthContainer.style.pointerEvents = 'none';
+    resetButton.style.opacity = '0.5';
+    resetButton.style.pointerEvents = 'none';
+    
+    // Evento para o toggle de física
+    physicsToggle.addEventListener('change', function() {
+        const isEnabled = this.checked;
+        
+        // Disparar evento para ativar/desativar física
+        document.dispatchEvent(new CustomEvent('physics-enabled-changed', {
+            detail: { enabled: isEnabled }
+        }));
+        
+        // Ativar/desativar controles dependentes
+        strengthContainer.style.opacity = isEnabled ? '1' : '0.5';
+        strengthContainer.style.pointerEvents = isEnabled ? 'auto' : 'none';
+        resetButton.style.opacity = isEnabled ? '1' : '0.5';
+        resetButton.style.pointerEvents = isEnabled ? 'auto' : 'none';
+    });
+    
+    // Evento para o slider de intensidade
+    strengthSlider.addEventListener('input', function() {
+        const value = parseFloat(this.value);
+        
+        // Atualizar o display de valor
+        strengthValue.textContent = value.toFixed(1) + 'x';
+        
+        // Disparar evento para ajustar a intensidade da gravidade
+        document.dispatchEvent(new CustomEvent('gravity-strength-changed', {
+            detail: { strength: value }
+        }));
+    });
+    
+    // Evento para o botão de reset
+    resetButton.addEventListener('click', function() {
+        // Disparar evento para resetar órbitas
+        document.dispatchEvent(new CustomEvent('reset-orbits', {}));
     });
 } 
