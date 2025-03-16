@@ -62,8 +62,8 @@ export function setupPlanetSelection(
     // Configurar evento de clique para seleção
     setupMouseEvents(camera, scene, renderer, planets, camera_utils);
     
-    // Adicionar evento de clique ao canvas
-    renderer.domElement.addEventListener('dblclick', (event) => handleObjectClick(event));
+    // Configurar eventos personalizados para foco via busca
+    setupCustomEvents();
 }
 
 /**

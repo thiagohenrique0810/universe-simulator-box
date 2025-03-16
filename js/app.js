@@ -47,7 +47,7 @@ import {
 
 // Importação dos módulos de UI
 import { setupPlanetSelection, updateCameraFocus, setComparisonMode } from './modules/ui/planet-selection.js';
-import { createInfoPanel, showPlanetInfo, showMoonInfo, showDwarfPlanetInfo } from './modules/ui/info-panel.js';
+import { createInfoPanel, showPlanetInfo, showMoonInfo, showDwarfPlanetInfo, showKuiperObjectInfo } from './modules/ui/info-panel.js';
 import { createSimulationControls, getSimulationSpeed } from './modules/ui/simulation-controls.js';
 import { initPlanetComparison } from './modules/ui/planet-comparison.js';
 
@@ -211,7 +211,8 @@ function init() {
         (dwarfPlanetName) => showDwarfPlanetInfo(dwarfPlanetName),
         renderer,
         planets,
-        camera_utils
+        camera_utils,
+        (objectName) => showKuiperObjectInfo(objectName)
     );
     
     // Criar o painel de informações

@@ -106,7 +106,7 @@ export function createSearchControls(controlsContainer) {
 }
 
 /**
- * Compila lista de objetos pesquisáveis do sistema solar
+ * Compila todos os objetos pesquisáveis (planetas, luas, planetas anões e objetos do Cinturão de Kuiper)
  * @param {Object} PLANET_DATA - Dados dos planetas e luas
  * @returns {Array} Lista de objetos pesquisáveis
  */
@@ -116,6 +116,71 @@ function compileSearchableObjects(PLANET_DATA) {
     // Adicionar planetas
     Object.entries(PLANET_DATA).forEach(([key, planet]) => {
         if (key !== 'unidades') {
+            // Caso especial: Cinturão de Kuiper
+            if (key === 'cinturaoKuiper') {
+                // Adicionar planetas anões do Cinturão de Kuiper
+                if (planet.planetasAnoes && Array.isArray(planet.planetasAnoes)) {
+                    planet.planetasAnoes.forEach(dwarfPlanet => {
+                        if (dwarfPlanet && dwarfPlanet.nome) {
+                            searchableObjects.push({
+                                name: dwarfPlanet.nome,
+                                key: dwarfPlanet.id || dwarfPlanet.nome.toLowerCase(),
+                                type: 'Planeta Anão',
+                                info: dwarfPlanet.descricao || `${dwarfPlanet.nome} é um planeta anão do Cinturão de Kuiper`,
+                                isDwarfPlanet: true
+                            });
+                            
+                            // Adicionar luas de planetas anões, se houver
+                            if (dwarfPlanet.satellites && Array.isArray(dwarfPlanet.satellites)) {
+                                dwarfPlanet.satellites.forEach(moon => {
+                                    if (moon && moon.name) {
+                                        const moonName = moon.name.charAt(0).toUpperCase() + moon.name.slice(1);
+                                        searchableObjects.push({
+                                            name: moonName,
+                                            key: moon.name.toLowerCase(),
+                                            parent: dwarfPlanet.nome,
+                                            parentKey: dwarfPlanet.id || dwarfPlanet.nome.toLowerCase(),
+                                            type: 'Lua',
+                                            info: `${moonName} é uma lua de ${dwarfPlanet.nome}`,
+                                            isMoon: true
+                                        });
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+                
+                // Adicionar objetos menores do Cinturão de Kuiper, se houver
+                if (planet.objetosMenores) {
+                    const categorias = ['objetosClassicos', 'objetosRessonantes', 'discoDisperso'];
+                    
+                    categorias.forEach(categoria => {
+                        if (planet.objetosMenores[categoria] && Array.isArray(planet.objetosMenores[categoria])) {
+                            planet.objetosMenores[categoria].forEach(objeto => {
+                                if (objeto && objeto.nome) {
+                                    const tipoExibicao = {
+                                        'objetosClassicos': 'Objeto Clássico',
+                                        'objetosRessonantes': 'Objeto Ressonante',
+                                        'discoDisperso': 'Objeto do Disco Disperso'
+                                    }[categoria] || 'Objeto de Kuiper';
+                                    
+                                    searchableObjects.push({
+                                        name: objeto.nome,
+                                        key: objeto.id || objeto.nome.toLowerCase(),
+                                        type: tipoExibicao,
+                                        info: objeto.descricao || `${objeto.nome} é um ${tipoExibicao.toLowerCase()} do Cinturão de Kuiper`,
+                                        isKuiperObject: true
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+                
+                return; // Pular o resto do processamento para o cinturaoKuiper
+            }
+            
             // Garantir que o planeta tenha um nome
             const planetName = planet.nome || key.charAt(0).toUpperCase() + key.slice(1);
             
@@ -137,7 +202,8 @@ function compileSearchableObjects(PLANET_DATA) {
                             parent: planetName,
                             parentKey: key,
                             type: 'Lua',
-                            info: `${moonName} é uma lua de ${planetName}`
+                            info: `${moonName} é uma lua de ${planetName}`,
+                            isMoon: true
                         });
                     }
                 });
@@ -151,7 +217,8 @@ function compileSearchableObjects(PLANET_DATA) {
                             name: dwarfPlanet.nome,
                             key: dwarfPlanet.id || dwarfPlanet.nome.toLowerCase(),
                             type: 'Planeta Anão',
-                            info: dwarfPlanet.descricao || `${dwarfPlanet.nome} é um planeta anão do Sistema Solar`
+                            info: dwarfPlanet.descricao || `${dwarfPlanet.nome} é um planeta anão do Sistema Solar`,
+                            isDwarfPlanet: true
                         });
                     }
                 });
@@ -235,6 +302,12 @@ function createResultItem(obj, container, searchInput) {
         icon.textContent = '🌙';
     } else if (obj.type === 'Planeta Anão') {
         icon.textContent = '⚪';
+    } else if (obj.type.includes('Objeto Clássico')) {
+        icon.textContent = '💫';
+    } else if (obj.type.includes('Objeto Ressonante')) {
+        icon.textContent = '🌠';
+    } else if (obj.type.includes('Disco Disperso')) {
+        icon.textContent = '☄️';
     } else {
         icon.textContent = '✨';
     }
@@ -267,8 +340,9 @@ function createResultItem(obj, container, searchInput) {
             detail: {
                 objectKey: obj.parent ? obj.parentKey : obj.key,
                 objectName: obj.name,
-                isMoon: obj.type === 'Lua',
-                isDwarfPlanet: obj.type === 'Planeta Anão'
+                isMoon: obj.type === 'Lua' || obj.isMoon,
+                isDwarfPlanet: obj.type === 'Planeta Anão' || obj.isDwarfPlanet,
+                isKuiperObject: obj.isKuiperObject
             }
         });
         document.dispatchEvent(focusEvent);
