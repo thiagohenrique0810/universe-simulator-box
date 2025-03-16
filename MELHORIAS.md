@@ -61,10 +61,10 @@ Este documento lista as melhorias planejadas para o simulador do sistema solar, 
 
 ## 4. Visualização Avançada
 
-- [ ] **Efeitos Atmosféricos**: Melhorar a representação visual das atmosferas
-  - [ ] Implementar shaders para dispersão atmosférica
+- [x] **Efeitos Atmosféricos**: Melhorar a representação visual das atmosferas
+  - [x] Implementar shaders para dispersão atmosférica
+  - [x] Criar efeitos de refração da luz através das atmosferas
   - [ ] Adicionar nuvens e padrões climáticos para planetas com atmosfera
-  - [ ] Criar efeitos de refração da luz através das atmosferas
 
 - [ ] **Anéis Planetários Expandidos**: Adicionar anéis para outros planetas
   - [ ] Implementar anéis para Urano e Netuno
@@ -207,10 +207,20 @@ Este documento lista as melhorias planejadas para o simulador do sistema solar, 
 **Arquivos modificados:** js/modules/core/gravity-physics.js, js/modules/ui/simulation-controls.js, js/app.js, styles.css
 **Observações:** O sistema implementa a Lei da Gravitação Universal de Newton para simular as interações gravitacionais entre os corpos celestes. Inclui controles para ativar/desativar o sistema, ajustar a intensidade da gravidade e resetar as órbitas. As órbitas dos planetas e luas agora são afetadas pela influência gravitacional de outros corpos, criando perturbações orbitais realistas.
 
+### [20/06/2023] - [Implementação do Cinturão de Kuiper]
+**Descrição:** Adicionados objetos do Cinturão de Kuiper, incluindo os planetas anões Plutão, Éris, Makemake e Haumea.
+**Arquivos modificados:** js/modules/data/planet-data.js, js/modules/core/celestial-bodies.js, js/modules/core/animation-loop.js, js/modules/ui/info-panel.js, js/modules/ui/planet-selection.js
+**Observações:** Foram implementados os principais objetos do Cinturão de Kuiper com órbitas elípticas realistas e inclinações corretas. Plutão e os outros planetas anões foram adicionados com suas características reais e luas. O sistema de informações foi atualizado para exibir detalhes sobre esses objetos quando clicados.
+
+### [21/06/2023] - [Efeitos Atmosféricos]
+**Descrição:** Implementado sistema de efeitos atmosféricos para planetas com shaders de dispersão atmosférica.
+**Arquivos modificados:** js/modules/core/atmosphere.js, js/modules/ui/controls/visibility-controls.js, js/app.js, styles.css
+**Observações:** O sistema utiliza shaders personalizados para simular o efeito de dispersão atmosférica (scattering) em planetas com atmosfera. Cada planeta tem configurações específicas para cor e densidade da atmosfera. Foi adicionado controle na interface para ativar/desativar os efeitos atmosféricos. Este sistema cria um halo realista em torno dos planetas que muda dependendo da iluminação, tornando a simulação visualmente mais realista.
+
 ---
 
 ## Prioridades para Próxima Iteração
 
-1. Expandir o sistema solar com objetos do cinturão de Kuiper
-2. Implementar efeitos atmosféricos para planetas com atmosfera
-3. Adicionar sistema de colisões 
+1. Adicionar sistema de colisões
+2. Implementar anéis planetários expandidos para Urano e Netuno
+3. Adicionar padrões climáticos para planetas com atmosfera 

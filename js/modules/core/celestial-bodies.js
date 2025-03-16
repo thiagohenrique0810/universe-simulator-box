@@ -75,7 +75,7 @@ export function createCelestialBodies(scene, PLANET_DATA) {
     
     // Criar cada planeta
     for (const planetName in PLANET_DATA) {
-        if (planetName === 'sol') continue; // Sol já foi criado
+        if (planetName === 'sol' || planetName === 'cinturaoKuiper') continue; // Sol já foi criado, Cinturão de Kuiper é tratado separadamente
         
         const planetData = PLANET_DATA[planetName];
         
@@ -145,6 +145,11 @@ export function createCelestialBodies(scene, PLANET_DATA) {
                 createMoon(planet, satellite);
             });
         }
+    }
+    
+    // Criar objetos do Cinturão de Kuiper
+    if (PLANET_DATA.cinturaoKuiper && PLANET_DATA.cinturaoKuiper.planetasAnoes) {
+        createKuiperBeltObjects(scene, PLANET_DATA.cinturaoKuiper);
     }
     
     // Tentar carregar texturas
@@ -511,4 +516,165 @@ function createSunGlow(sol, scene) {
     
     // Chamar a função inicialmente
     sol.userData.updateGlow();
+}
+
+/**
+ * Cria os objetos do Cinturão de Kuiper (planetas anões)
+ * @param {Object} scene - Cena Three.js
+ * @param {Object} kuiperData - Dados do Cinturão de Kuiper
+ */
+function createKuiperBeltObjects(scene, kuiperData) {
+    console.log('Criando objetos do Cinturão de Kuiper...');
+    
+    if (!kuiperData.planetasAnoes || !Array.isArray(kuiperData.planetasAnoes)) {
+        console.warn('Dados de planetas anões não encontrados ou inválidos');
+        return;
+    }
+    
+    const textureLoader = new THREE.TextureLoader();
+    
+    // Criar cada planeta anão
+    kuiperData.planetasAnoes.forEach(dwarfPlanetData => {
+        console.log(`Criando planeta anão: ${dwarfPlanetData.nome}`);
+        
+        // Verificar dados essenciais
+        if (!dwarfPlanetData.id || !dwarfPlanetData.radius || !dwarfPlanetData.distance) {
+            console.warn(`Dados insuficientes para criar o planeta anão ${dwarfPlanetData.nome}`);
+            return;
+        }
+        
+        // Criar geometria do planeta anão
+        const dwarfGeometry = new THREE.SphereGeometry(dwarfPlanetData.radius, 32, 32);
+        
+        // Determinar material baseado na textura ou cor
+        let dwarfMaterial;
+        if (dwarfPlanetData.textureUrl) {
+            dwarfMaterial = new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                roughness: 0.7,
+                metalness: 0.1
+            });
+            
+            // Tentar carregar a textura
+            textureLoader.load(
+                dwarfPlanetData.textureUrl,
+                function(texture) {
+                    dwarfMaterial.map = texture;
+                    dwarfMaterial.needsUpdate = true;
+                },
+                undefined,
+                function(err) {
+                    console.warn(`Erro ao carregar textura para ${dwarfPlanetData.nome}:`, err);
+                    // Usar cor especificada ou cor padrão
+                    dwarfMaterial.color.set(dwarfPlanetData.color || 0xaaaaaa);
+                }
+            );
+        } else {
+            // Se não tiver textura, usar cor diretamente
+            dwarfMaterial = new THREE.MeshStandardMaterial({
+                color: dwarfPlanetData.color || 0xaaaaaa,
+                roughness: 0.7,
+                metalness: 0.1
+            });
+        }
+        
+        // Criar o objeto 3D para o planeta anão
+        const dwarfPlanet = new THREE.Mesh(dwarfGeometry, dwarfMaterial);
+        dwarfPlanet.name = dwarfPlanetData.id;
+        
+        // Definir um ângulo aleatório ou baseado no identificador
+        const seed = dwarfPlanetData.id.charCodeAt(0) + dwarfPlanetData.id.charCodeAt(dwarfPlanetData.id.length - 1);
+        const angle = (seed % 100) / 100 * Math.PI * 2;
+        
+        // Criar órbita visual
+        const orbitParams = createPlanetOrbit(scene, dwarfPlanetData.id, dwarfPlanetData);
+        
+        // Posicionar o planeta anão
+        dwarfPlanet.position.x = Math.cos(angle) * dwarfPlanetData.distance;
+        dwarfPlanet.position.z = Math.sin(angle) * dwarfPlanetData.distance;
+        
+        // Aplicar inclinação orbital, se definida
+        if (dwarfPlanetData.inclination) {
+            dwarfPlanet.rotation.x = THREE.MathUtils.degToRad(dwarfPlanetData.inclination);
+        }
+        
+        // Adicionar dados para rotação e órbita
+        dwarfPlanet.userData = {
+            angle: angle,
+            distance: dwarfPlanetData.distance,
+            rotationSpeed: dwarfPlanetData.rotationSpeed || 0.005,
+            orbitalSpeed: dwarfPlanetData.orbitalSpeed || 0.00001,
+            semiMajorAxis: dwarfPlanetData.semiMajorAxis || dwarfPlanetData.distance,
+            eccentricity: dwarfPlanetData.eccentricity || 0,
+            radius: dwarfPlanetData.radius,
+            isDwarfPlanet: true // Marcar como planeta anão
+        };
+        
+        // Adicionar o planeta anão à cena
+        scene.add(dwarfPlanet);
+        planets[dwarfPlanetData.id] = dwarfPlanet;
+        
+        // Adicionar anéis, se especificado
+        if (dwarfPlanetData.hasRings) {
+            createDwarfPlanetRings(dwarfPlanet, dwarfPlanetData);
+        }
+        
+        // Adicionar satélites (luas)
+        if (dwarfPlanetData.satellites && Array.isArray(dwarfPlanetData.satellites)) {
+            dwarfPlanetData.satellites.forEach(satellite => {
+                createMoon(dwarfPlanet, satellite);
+            });
+        }
+    });
+}
+
+/**
+ * Cria anéis para planetas anões (como Haumea)
+ * @param {Object} planet - Objeto do planeta anão
+ * @param {Object} planetData - Dados do planeta anão
+ */
+function createDwarfPlanetRings(planet, planetData) {
+    // Criar um container para os anéis
+    const ringsContainer = new THREE.Object3D();
+    ringsContainer.name = `aneis${planetData.nome}Container`;
+    
+    // Dimensões dos anéis - mais sutis para planetas anões
+    const ringInnerRadius = planetData.radius * 1.2;
+    const ringOuterRadius = planetData.radius * 1.8;
+    const ringSegments = 64; // Resolução menor que os anéis de Saturno
+    
+    // Usar a geometria de anel padrão do Three.js
+    const ringGeometry = new THREE.RingGeometry(
+        ringInnerRadius,
+        ringOuterRadius,
+        ringSegments
+    );
+    
+    // Material para os anéis - mais transparente para planetas anões
+    const ringMaterial = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.4,
+        side: THREE.DoubleSide
+    });
+    
+    // Criar o mesh do anel
+    const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+    ring.name = `aneis${planetData.nome}`;
+    
+    // Rotacionar para ficar no plano horizontal
+    ring.rotation.x = Math.PI / 2;
+    
+    // Adicionar inclinação personalizada se especificada
+    const ringTilt = planetData.ringTilt || 5; // Valor padrão
+    ring.rotation.z = THREE.MathUtils.degToRad(ringTilt);
+    
+    // Adicionar o anel ao container
+    ringsContainer.add(ring);
+    
+    // Marcar o planeta como tendo anéis
+    planet.userData.hasRings = true;
+    
+    // Adicionar o container dos anéis ao planeta
+    planet.add(ringsContainer);
 } 

@@ -45,6 +45,9 @@ import { setupBackgroundMusic } from './modules/audio/background-music.js';
 // Importação do módulo de favicon
 import { applyFavicon, applyStaticFavicon } from '../img/favicon.js';
 
+// Importação do módulo de atmosfera
+import { applyAtmosphericEffect, removeAtmosphericEffect, toggleAtmosphericEffects } from './modules/core/atmosphere.js';
+
 // Variáveis globais da aplicação
 let scene, camera, renderer, controls;
 let planets = {};
@@ -96,13 +99,67 @@ function init() {
     // Realizar uma validação inicial de órbitas para garantir posicionamento correto
     validatePlanetOrbits(planets, getOrbits());
     
+    // Aplicar efeitos atmosféricos aos planetas
+    console.log('Aplicando efeitos atmosféricos...');
+    toggleAtmosphericEffects(planets, true);
+    
+    // Criar objeto com utilidades de câmera
+    const camera_utils = {
+        focusOnObject: (object, animate = true) => {
+            if (!object) return;
+            
+            // Obter a posição do objeto
+            const position = object.position.clone();
+            
+            // Definir a posição alvo da câmera
+            // Adicionar offset para não ficar exatamente sobre o objeto
+            const offset = new THREE.Vector3(5, 3, 5);
+            const targetPosition = position.clone().add(offset);
+            
+            if (animate) {
+                // Animação suave
+                const startPosition = camera.position.clone();
+                const startTarget = controls.target.clone();
+                const duration = 1000; // 1 segundo
+                const startTime = Date.now();
+                
+                function animateCamera() {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const easeProgress = 1 - Math.pow(1 - progress, 3); // Easing out cubic
+                    
+                    // Interpolar posição
+                    camera.position.lerpVectors(startPosition, targetPosition, easeProgress);
+                    
+                    // Interpolar alvo
+                    controls.target.lerpVectors(startTarget, position, easeProgress);
+                    controls.update();
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(animateCamera);
+                    }
+                }
+                
+                animateCamera();
+            } else {
+                // Mudança imediata
+                camera.position.copy(targetPosition);
+                controls.target.copy(position);
+                controls.update();
+            }
+        }
+    };
+    
     // Configurar o sistema de seleção de planetas, luas e planetas anões
     setupPlanetSelection(
         scene, 
         camera, 
         (planetName) => showPlanetInfo(planetName, PLANET_INFO, PLANET_DATA),
         (moonName, planetName) => showMoonInfo(moonName, planetName, PLANET_DATA),
-        (dwarfPlanetName) => showDwarfPlanetInfo(dwarfPlanetName)
+        (dwarfPlanetName) => showDwarfPlanetInfo(dwarfPlanetName),
+        renderer,
+        planets,
+        camera_utils
     );
     
     // Criar o painel de informações
@@ -138,8 +195,15 @@ function init() {
     const infoElement = document.getElementById('info');
     if (infoElement) {
         const helpText = document.createElement('p');
-        helpText.textContent = 'Dê um clique duplo em qualquer objeto para focar a câmera nele';
+        helpText.textContent = 'Dica: Dê dois cliques em um planeta para focar nele, ou use o campo de busca.';
+        helpText.className = 'help-tip';
         infoElement.appendChild(helpText);
+        
+        // Remover a dica após 10 segundos
+        setTimeout(() => {
+            helpText.style.opacity = '0';
+            setTimeout(() => helpText.remove(), 1000);
+        }, 10000);
     }
 }
 
@@ -147,54 +211,66 @@ function init() {
  * Configura os eventos dos controles da simulação
  */
 function setupControlEvents() {
+    // Eventos de controle de velocidade
+    document.addEventListener('set-simulation-speed', function(event) {
+        console.log(`Velocidade da simulação ajustada para: ${event.detail.speed}`);
+    });
+    
     // Eventos de visibilidade
-    document.addEventListener('toggle-orbits-visibility', function(e) {
-        toggleOrbitsVisibility(e.detail.visible);
+    document.addEventListener('toggle-orbits', function(event) {
+        const visible = event.detail.visible;
+        toggleOrbitsVisibility(visible);
     });
     
-    document.addEventListener('toggle-stars-visibility', function(e) {
-        toggleStarsVisibility(e.detail.visible);
+    document.addEventListener('toggle-stars', function(event) {
+        const visible = event.detail.visible;
+        toggleStarsVisibility(visible);
     });
     
-    document.addEventListener('toggle-skybox-visibility', function(e) {
-        toggleSkyboxVisibility(e.detail.visible);
+    document.addEventListener('toggle-skybox', function(event) {
+        const visible = event.detail.visible;
+        toggleSkyboxVisibility(visible);
     });
     
-    document.addEventListener('toggle-asteroid-belt-visibility', function(e) {
-        toggleAsteroidBeltVisibility(e.detail.visible);
+    document.addEventListener('toggle-asteroid-belt', function(event) {
+        const visible = event.detail.visible;
+        toggleAsteroidBeltVisibility(visible);
     });
     
-    document.addEventListener('toggle-belt-ring-visibility', function(e) {
-        toggleBeltRingVisibility(e.detail.visible);
+    document.addEventListener('toggle-belt-ring', function(event) {
+        const visible = event.detail.visible;
+        toggleBeltRingVisibility(visible);
     });
     
-    document.addEventListener('toggle-saturn-rings-visibility', function(e) {
-        const planets = getPlanets();
+    document.addEventListener('toggle-saturn-rings', function(event) {
+        const visible = event.detail.visible;
         if (planets.saturno) {
-            const saturnRings = planets.saturno.children.find(child => child.userData && child.userData.isSaturnRings);
+            const saturnRings = planets.saturno.children.find(child => child.name === 'aneisSaturnoContainer');
             if (saturnRings) {
-                saturnRings.visible = e.detail.visible;
+                saturnRings.visible = visible;
             }
         }
     });
     
-    // Eventos do modo de comparação
-    document.addEventListener('comparison-mode-changed', function(e) {
-        setComparisonMode(e.detail.isActive);
+    // Eventos para efeitos atmosféricos
+    document.addEventListener('toggle-atmosphere', function(event) {
+        const visible = event.detail.visible;
+        toggleAtmosphericEffects(planets, visible);
     });
     
-    // Eventos do sistema de física avançada
-    document.addEventListener('physics-enabled-changed', function(e) {
-        setPhysicsEnabled(e.detail.enabled);
-    });
-    
-    document.addEventListener('gravity-strength-changed', function(e) {
-        setGravitationalStrength(e.detail.strength);
+    // Eventos para física avançada
+    document.addEventListener('toggle-advanced-physics', function(event) {
+        const enabled = event.detail.enabled;
+        setPhysicsEnabled(enabled);
     });
     
     document.addEventListener('reset-orbits', function() {
-        const planets = getPlanets();
         resetOrbits(planets, PLANET_DATA);
+    });
+    
+    document.addEventListener('set-gravity-strength', function(event) {
+        const strength = event.detail.strength;
+        setGravitationalStrength(strength);
     });
 }
 

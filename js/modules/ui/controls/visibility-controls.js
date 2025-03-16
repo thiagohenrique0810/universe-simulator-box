@@ -12,103 +12,94 @@ let saturnRingsVisible = true;
 let asteroidBeltRingVisible = true;
 
 /**
- * Cria os controles de visibilidade
- * @param {HTMLElement} container - Container para os controles
- * @param {Boolean} initiallyOpen - Se a seção deve iniciar aberta
+ * Cria os controles de visibilidade para elementos do sistema solar
+ * Permite mostrar/ocultar órbitas, estrelas, skybox, etc.
  */
-export function createVisibilityControls(container, initiallyOpen = false) {
-    // Criar seção acordeão
-    const { content } = createAccordionSection(
-        container, 
-        'Visibilidade', 
-        initiallyOpen
-    );
+export function createVisibilityControls() {
+    // Criar o container para os controles
+    const container = document.createElement('div');
+    container.className = 'controls-section';
     
-    // Container para os checkboxes
-    const checkboxContainer = document.createElement('div');
-    checkboxContainer.style.display = 'flex';
-    checkboxContainer.style.flexDirection = 'column';
-    checkboxContainer.style.gap = '3px';
+    // Adicionar título da seção
+    const title = document.createElement('h3');
+    title.textContent = 'Controles de Visibilidade';
+    title.className = 'section-title';
+    container.appendChild(title);
     
-    // Checkbox para linhas de órbita
-    const orbitCheckbox = createCheckbox(
-        'Linhas de Órbita', 
-        orbitLinesVisible, 
-        function(checked) {
-            orbitLinesVisible = checked;
-            document.dispatchEvent(new CustomEvent('toggle-orbits-visibility', {
-                detail: { visible: checked }
-            }));
+    // Controles de visibilidade
+    const controls = [
+        {
+            id: 'toggle-orbits',
+            label: 'Mostrar Órbitas',
+            checked: true,
+            event: 'toggle-orbits'
+        },
+        {
+            id: 'toggle-stars',
+            label: 'Mostrar Estrelas',
+            checked: true,
+            event: 'toggle-stars'
+        },
+        {
+            id: 'toggle-skybox',
+            label: 'Mostrar Skybox',
+            checked: true,
+            event: 'toggle-skybox'
+        },
+        {
+            id: 'toggle-asteroid-belt',
+            label: 'Mostrar Cinturão de Asteroides',
+            checked: true,
+            event: 'toggle-asteroid-belt'
+        },
+        {
+            id: 'toggle-belt-ring',
+            label: 'Mostrar Anel do Cinturão',
+            checked: true,
+            event: 'toggle-belt-ring'
+        },
+        {
+            id: 'toggle-saturn-rings',
+            label: 'Mostrar Anéis de Saturno',
+            checked: true,
+            event: 'toggle-saturn-rings'
+        },
+        {
+            id: 'toggle-atmosphere',
+            label: 'Mostrar Efeitos Atmosféricos',
+            checked: true,
+            event: 'toggle-atmosphere'
         }
-    );
-    checkboxContainer.appendChild(orbitCheckbox);
+    ];
     
-    // Checkbox para estrelas
-    const starsCheckbox = createCheckbox(
-        'Estrelas', 
-        starsVisible, 
-        function(checked) {
-            starsVisible = checked;
-            document.dispatchEvent(new CustomEvent('toggle-stars-visibility', {
-                detail: { visible: checked }
+    // Criar cada controle de visibilidade
+    controls.forEach(control => {
+        const controlContainer = document.createElement('div');
+        controlContainer.className = 'control-item';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = control.id;
+        checkbox.checked = control.checked;
+        
+        const label = document.createElement('label');
+        label.htmlFor = control.id;
+        label.textContent = control.label;
+        
+        // Evento de mudança
+        checkbox.addEventListener('change', () => {
+            // Disparar evento customizado
+            document.dispatchEvent(new CustomEvent(control.event, {
+                detail: { visible: checkbox.checked }
             }));
-        }
-    );
-    checkboxContainer.appendChild(starsCheckbox);
+        });
+        
+        controlContainer.appendChild(checkbox);
+        controlContainer.appendChild(label);
+        container.appendChild(controlContainer);
+    });
     
-    // Checkbox para skybox
-    const skyboxCheckbox = createCheckbox(
-        'Via Láctea (Fundo)', 
-        skyboxVisible, 
-        function(checked) {
-            skyboxVisible = checked;
-            document.dispatchEvent(new CustomEvent('toggle-skybox-visibility', {
-                detail: { visible: checked }
-            }));
-        }
-    );
-    checkboxContainer.appendChild(skyboxCheckbox);
-    
-    // Checkbox para cinturão de asteroides
-    const asteroidBeltCheckbox = createCheckbox(
-        'Cinturão de Asteroides', 
-        asteroidBeltVisible, 
-        function(checked) {
-            asteroidBeltVisible = checked;
-            document.dispatchEvent(new CustomEvent('toggle-asteroid-belt-visibility', {
-                detail: { visible: checked }
-            }));
-        }
-    );
-    checkboxContainer.appendChild(asteroidBeltCheckbox);
-    
-    // Checkbox para anel do cinturão
-    const beltRingCheckbox = createCheckbox(
-        'Anel do Cinturão', 
-        asteroidBeltRingVisible, 
-        function(checked) {
-            asteroidBeltRingVisible = checked;
-            document.dispatchEvent(new CustomEvent('toggle-belt-ring-visibility', {
-                detail: { visible: checked }
-            }));
-        }
-    );
-    checkboxContainer.appendChild(beltRingCheckbox);
-    
-    // Checkbox para anéis de Saturno
-    const saturnRingsCheckbox = createCheckbox(
-        'Anéis de Saturno', 
-        saturnRingsVisible, 
-        function(checked) {
-            saturnRingsVisible = checked;
-            document.dispatchEvent(new CustomEvent('toggle-saturn-rings-visibility', {
-                detail: { visible: checked }
-            }));
-        }
-    );
-    checkboxContainer.appendChild(saturnRingsCheckbox);
-    
-    content.appendChild(checkboxContainer);
+    return container;
 }
 
 /**

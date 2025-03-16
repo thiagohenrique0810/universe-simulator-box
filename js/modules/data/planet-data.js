@@ -280,21 +280,21 @@ export const PLANET_DATA = {
         ]
     },
     netuno: {
-        radius: 0.60,
+        radius: 0.59,
         textureUrl: 'textures/neptune.jpg',
-        distance: 250,
-        semiMajorAxis: 250,
-        eccentricity: 0.011,
-        orbitalSpeed: 0.00002,
-        rotationSpeed: 0.032,
-        inclination: 1.8,
-        orbitColor: 0x3355ff,
+        distance: 240,
+        semiMajorAxis: 240,
+        eccentricity: 0.009,
+        orbitalSpeed: 0.00003,
+        rotationSpeed: 0.04,
+        inclination: 1.77,
+        orbitColor: 0x2233ff,
         satellites: [
             {
-                name: 'tritao',
-                radius: 0.021,
-                color: 0xd1ccc1,
-                distance: 2.2,
+                name: 'tritão',
+                radius: 0.02,
+                color: 0xcccccc,
+                distance: 2.8,
                 orbitalSpeed: 0.01,
                 rotationSpeed: 0.004,
                 eccentricity: 0.000016
@@ -325,6 +325,142 @@ export const PLANET_DATA = {
                 orbitalSpeed: 0.015,
                 rotationSpeed: 0.006,
                 eccentricity: 0.0014
+            }
+        ]
+    },
+    
+    // Cinturão de Kuiper
+    cinturaoKuiper: {
+        nome: "Cinturão de Kuiper",
+        descrição: "Região além da órbita de Netuno que contém diversos objetos pequenos, principalmente compostos por gelo.",
+        // Não incluímos raio ou textura, pois este será apenas um container para os planetas anões
+        planetasAnoes: [
+            {
+                id: "plutao",
+                nome: "Plutão",
+                radius: 0.17,
+                color: 0xDAC3AD,
+                distance: 300,
+                semiMajorAxis: 395,
+                eccentricity: 0.2488,
+                orbitalSpeed: 0.000022,
+                rotationSpeed: 0.01,
+                inclination: 17.16,
+                orbitColor: 0xaa66aa,
+                tipo: "Planeta Anão",
+                composicao: "Rocha e gelo (nitrogênio, metano, monóxido de carbono)",
+                temperatura: "-230°C (média)",
+                diametro: "2.376 km",
+                orbita: "248 anos terrestres",
+                rotacao: "6,4 dias (retrógrada)",
+                distanciaSol: "5,9 bilhões km (39,5 UA)",
+                descricao: "Plutão foi considerado o nono planeta do Sistema Solar até 2006, quando foi reclassificado como planeta anão. Possui cinco luas conhecidas, sendo Caronte a maior. A sonda New Horizons revelou uma superfície surpreendentemente diversa, com montanhas de gelo, planícies de nitrogênio congelado e possíveis glaciares em movimento.",
+                satellites: [
+                    {
+                        name: 'caronte',
+                        radius: 0.09,
+                        color: 0xdddddd,
+                        distance: 0.5,
+                        orbitalSpeed: 0.02,
+                        rotationSpeed: 0.02,
+                        eccentricity: 0.0022
+                    }
+                ]
+            },
+            {
+                id: "eris",
+                nome: "Éris",
+                radius: 0.18,
+                color: 0xeeeeee,
+                distance: 510,
+                semiMajorAxis: 680,
+                eccentricity: 0.44,
+                orbitalSpeed: 0.000015,
+                rotationSpeed: 0.008,
+                inclination: 44.0,
+                orbitColor: 0xbb88bb,
+                tipo: "Planeta Anão",
+                composicao: "Rocha e gelo (metano)",
+                temperatura: "-243°C (estimada)",
+                diametro: "2.326 km",
+                orbita: "558 anos terrestres",
+                rotacao: "25,9 horas (estimada)",
+                distanciaSol: "14,5 bilhões km (96,4 UA) no afélio",
+                descricao: "Éris é o segundo maior planeta anão conhecido e tem massa ligeiramente superior à de Plutão. Sua descoberta em 2005 foi um dos fatores que levaram à redefinição do termo 'planeta' e à criação da categoria de planetas anões. Possui uma lua conhecida chamada Disnomia.",
+                satellites: [
+                    {
+                        name: 'disnomia',
+                        radius: 0.025,
+                        color: 0xcccccc,
+                        distance: 0.4,
+                        orbitalSpeed: 0.02,
+                        rotationSpeed: 0.01,
+                        eccentricity: 0.01
+                    }
+                ]
+            },
+            {
+                id: "makemake",
+                nome: "Makemake",
+                radius: 0.14,
+                color: 0xffccaa,
+                distance: 460,
+                semiMajorAxis: 460,
+                eccentricity: 0.16,
+                orbitalSpeed: 0.000018,
+                rotationSpeed: 0.009,
+                inclination: 29.0,
+                orbitColor: 0xcc9988,
+                tipo: "Planeta Anão",
+                composicao: "Rocha e gelo (metano, etano)",
+                temperatura: "-240°C (estimada)",
+                diametro: "1.430 km",
+                orbita: "306 anos terrestres",
+                rotacao: "22,5 horas",
+                distanciaSol: "7,8 bilhões km (52,3 UA) no afélio",
+                descricao: "Makemake é um dos maiores objetos do Cinturão de Kuiper. Possui uma superfície avermelhada devido aos hidrocarbonetos complexos criados pela radiação cósmica. Foi descoberto em 2005 e nomeado em homenagem ao deus da criação da mitologia Rapa Nui da Ilha de Páscoa."
+            },
+            {
+                id: "haumea",
+                nome: "Haumea",
+                radius: 0.14,
+                color: 0xffffff,
+                distance: 434,
+                semiMajorAxis: 434,
+                eccentricity: 0.19,
+                orbitalSpeed: 0.00002,
+                rotationSpeed: 0.08, // Rotação extremamente rápida
+                inclination: 28.19,
+                orbitColor: 0xaaaaaa,
+                tipo: "Planeta Anão",
+                composicao: "Rocha e gelo cristalino",
+                temperatura: "-241°C (estimada)",
+                diametro: "1.632 × 1.178 km (formato de elipsoide)",
+                orbita: "285 anos terrestres",
+                rotacao: "3,9 horas (extremamente rápida)",
+                distanciaSol: "7,6 bilhões km (51 UA) no afélio",
+                descricao: "Haumea é notável por sua forma alongada, resultado de sua rotação extremamente rápida. É o único planeta anão conhecido a possuir um anel. Tem duas luas, Hi'iaka e Namaka, e sua superfície é composta principalmente por gelo cristalino. Foi descoberto em 2004 e nomeado em homenagem à deusa haviana da fertilidade.",
+                hasRings: true,
+                satellites: [
+                    {
+                        name: "hi'iaka",
+                        radius: 0.02,
+                        color: 0xffffff,
+                        distance: 0.3,
+                        orbitalSpeed: 0.02,
+                        rotationSpeed: 0.01,
+                        eccentricity: 0.05
+                    },
+                    {
+                        name: "namaka",
+                        radius: 0.01,
+                        color: 0xeeeeee,
+                        distance: 0.4,
+                        orbitalSpeed: 0.015,
+                        rotationSpeed: 0.01,
+                        eccentricity: 0.15
+                    }
+                ]
             }
         ]
     }

@@ -290,125 +290,104 @@ export function showMoonInfo(moonName, planetName, PLANET_DATA) {
 }
 
 /**
- * Exibe informações detalhadas do planeta anão selecionado
- * @param {String} dwarfPlanetName - Nome do planeta anão
+ * Mostra informações detalhadas sobre o planeta anão selecionado no painel de informações
+ * @param {String} dwarfPlanetId - ID do planeta anão selecionado
  */
-export function showDwarfPlanetInfo(dwarfPlanetName) {
-    console.log(`Tentando mostrar informações do planeta anão: ${dwarfPlanetName}`);
+export function showDwarfPlanetInfo(dwarfPlanetId) {
+    const infoPanel = document.getElementById('info-panel');
+    const infoPanelContent = document.getElementById('info-panel-content');
     
-    try {
-        // Mostrar o painel
-        infoPanel.style.display = 'block';
-        
-        // Ocultar instruções
-        if (instructions) {
-            instructions.style.display = 'none';
-        }
-        
-        // Atualizar o título do painel
-        const panelTitle = infoPanel.querySelector('h2');
-        if (panelTitle) {
-            panelTitle.textContent = 'Planeta Anão';
-        }
-        
-        // Informações dos planetas anões
-        const dwarfPlanetInfo = {
-            ceres: {
-                nome: 'Ceres',
-                diametro: '940 km',
-                descoberta: '1801 por Giuseppe Piazzi',
-                orbita: '4,6 anos',
-                distanciaSol: '2,77 UA',
-                descricao: 'Ceres é o maior objeto do cinturão de asteroides entre Marte e Júpiter. Foi o primeiro asteroide descoberto e é classificado como planeta anão desde 2006. Contém cerca de um terço da massa total do cinturão de asteroides.'
-            },
-            eris: {
-                nome: 'Éris',
-                diametro: '2.326 km',
-                descoberta: '2005 por Mike Brown',
-                orbita: '558 anos',
-                distanciaSol: '68 UA (no afélio)',
-                descricao: 'Éris é o segundo maior planeta anão conhecido no Sistema Solar e tem uma massa aproximadamente 27% maior que Plutão. Sua descoberta levou à reclassificação de Plutão e à definição formal de "planeta anão".'
-            },
-            makemake: {
-                nome: 'Makemake',
-                diametro: '1.430 km',
-                descoberta: '2005 por Mike Brown',
-                orbita: '306 anos',
-                distanciaSol: '45,8 UA (no afélio)',
-                descricao: 'Makemake é o terceiro maior planeta anão conhecido no Sistema Solar e o segundo maior objeto no cinturão de Kuiper. Tem uma superfície avermelhada e é composto principalmente por metano, etano e nitrogênio congelados.'
-            },
-            haumea: {
-                nome: 'Haumea',
-                diametro: '1.632 × 1.178 km (elipsoide)',
-                descoberta: '2004 por Mike Brown',
-                orbita: '285 anos',
-                distanciaSol: '51,5 UA (no afélio)',
-                descricao: 'Haumea é um dos planetas anões mais incomuns devido à sua forma alongada, resultado de sua rotação extremamente rápida. Completa uma rotação em apenas 4 horas. Possui dois satélites conhecidos e um anel.'
-            },
-            moon: {
-                nome: 'Lua (representação)',
-                diametro: '3.474 km',
-                descoberta: 'Conhecida desde a pré-história',
-                orbita: '27,3 dias',
-                distanciaTerra: '384.400 km',
-                descricao: 'Embora a Lua não seja um planeta anão, mas sim um satélite natural da Terra, sua textura foi incluída aqui para representação visual. É o único satélite natural da Terra e o quinto maior do Sistema Solar.'
-            }
-        };
-        
-        // Verificar se temos informações para este planeta anão
-        if (!dwarfPlanetInfo[dwarfPlanetName]) {
-            console.error(`Informações não encontradas para o planeta anão: ${dwarfPlanetName}`);
-            return;
-        }
-        
-        const info = dwarfPlanetInfo[dwarfPlanetName];
-        
-        // Construir HTML
-        let htmlContent = `
-            <h3>${info.nome}</h3>
-            <div class="info-item">
-                <strong>Diâmetro:</strong> ${info.diametro}
-            </div>
-            <div class="info-item">
-                <strong>Descoberta:</strong> ${info.descoberta}
-            </div>`;
-        
-        if (info.orbita) {
-            htmlContent += `
-            <div class="info-item">
-                <strong>Período Orbital:</strong> ${info.orbita}
-            </div>`;
-        }
-        
-        if (info.distanciaSol) {
-            htmlContent += `
-            <div class="info-item">
-                <strong>Distância ao Sol:</strong> ${info.distanciaSol}
-            </div>`;
-        }
-        
-        if (info.distanciaTerra) {
-            htmlContent += `
-            <div class="info-item">
-                <strong>Distância à Terra:</strong> ${info.distanciaTerra}
-            </div>`;
-        }
-        
-        // Adicionar descrição
-        htmlContent += `
-            <div class="info-description">
-                ${info.descricao}
-            </div>`;
-        
-        // Atualizar o conteúdo HTML
-        infoContent.innerHTML = htmlContent;
-        
-        // Aplicar estilos CSS
-        applyInfoPanelStyles();
-        
-    } catch (error) {
-        console.error('Erro ao mostrar informações do planeta anão:', error);
+    // Obter dados do planeta anão do PLANET_DATA
+    const dwarfPlanet = findDwarfPlanetById(dwarfPlanetId);
+    
+    if (!dwarfPlanet) {
+        console.error(`Planeta anão com ID '${dwarfPlanetId}' não encontrado`);
+        return;
     }
+    
+    // Construir HTML com informações do planeta anão
+    const html = `
+        <div class="info-header">
+            <h2>${dwarfPlanet.nome}</h2>
+            <span class="planet-type">Planeta Anão</span>
+        </div>
+        
+        <div class="info-stats">
+            <div class="stat">
+                <span class="stat-label">Diâmetro:</span>
+                <span class="stat-value">${dwarfPlanet.diametro || 'Desconhecido'}</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Distância do Sol:</span>
+                <span class="stat-value">${formatDistanceToSun(dwarfPlanet.distance)}</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Período Orbital:</span>
+                <span class="stat-value">${dwarfPlanet.periodoOrbital || 'Desconhecido'}</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Período de Rotação:</span>
+                <span class="stat-value">${dwarfPlanet.periodoRotacao || 'Desconhecido'}</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Temperatura:</span>
+                <span class="stat-value">${dwarfPlanet.temperatura || 'Desconhecida'}</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Excentricidade:</span>
+                <span class="stat-value">${dwarfPlanet.eccentricity ? dwarfPlanet.eccentricity.toFixed(2) : 'Desconhecida'}</span>
+            </div>
+        </div>
+        
+        <div class="info-description">
+            <p>${dwarfPlanet.descricao || 'Informações não disponíveis para este planeta anão.'}</p>
+        </div>
+        
+        <div class="info-footer">
+            <button id="close-info" class="info-button">Fechar</button>
+            <button id="more-info" class="info-button">Mais Informações</button>
+        </div>
+    `;
+    
+    // Atualizar conteúdo do painel
+    infoPanelContent.innerHTML = html;
+    
+    // Mostrar o painel
+    infoPanel.classList.add('visible');
+    
+    // Adicionar eventos aos botões
+    document.getElementById('close-info').addEventListener('click', () => {
+        infoPanel.classList.remove('visible');
+    });
+    
+    document.getElementById('more-info').addEventListener('click', () => {
+        // Abrir Wikipedia ou outra fonte em uma nova aba
+        let searchTerm = `${dwarfPlanet.nome} planeta anão`;
+        window.open(`https://pt.wikipedia.org/wiki/${dwarfPlanet.nome}`, '_blank');
+    });
+}
+
+/**
+ * Encontra um planeta anão pelo seu ID nos dados do sistema solar
+ * @param {String} id - ID do planeta anão
+ * @returns {Object|null} Objeto com dados do planeta anão ou null se não encontrado
+ */
+function findDwarfPlanetById(id) {
+    if (!window.PLANET_DATA || !window.PLANET_DATA.cinturaoKuiper || !window.PLANET_DATA.cinturaoKuiper.planetasAnoes) {
+        return null;
+    }
+    
+    return window.PLANET_DATA.cinturaoKuiper.planetasAnoes.find(planet => planet.id === id);
+}
+
+/**
+ * Formata a distância do Sol em uma string legível
+ * @param {Number} distance - Distância em unidades astronômicas
+ * @returns {String} Distância formatada
+ */
+function formatDistanceToSun(distance) {
+    const millionKm = distance * 149.6; // 1 UA = 149.6 milhões de km
+    return `${millionKm.toFixed(1)} milhões km (${distance} UA)`;
 }
 
 /**

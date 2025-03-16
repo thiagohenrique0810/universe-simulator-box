@@ -596,4 +596,58 @@ button.control-button:hover {
     transition: transform 0.4s ease, opacity 0.3s ease;
     transform: translateX(0);
     opacity: 1;
+}
+
+/* Dica de ajuda */
+.help-tip {
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #ffffff;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 14px;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+}
+
+/* Efeito de glow para atmosferas */
+.atmosphere-glow {
+    position: absolute;
+    border-radius: 50%;
+    box-shadow: 0 0 30px 10px rgba(180, 220, 255, 0.4);
+    pointer-events: none;
+}
+
+/* Cor específica para o glow de cada planeta */
+.atmosphere-terra {
+    box-shadow: 0 0 30px 10px rgba(100, 170, 255, 0.4);
+}
+
+.atmosphere-venus {
+    box-shadow: 0 0 30px 10px rgba(240, 203, 148, 0.4);
+}
+
+.atmosphere-marte {
+    box-shadow: 0 0 30px 10px rgba(219, 166, 117, 0.4);
+}
+
+.atmosphere-jupiter {
+    box-shadow: 0 0 30px 10px rgba(224, 194, 146, 0.4);
+}
+
+.atmosphere-saturno {
+    box-shadow: 0 0 30px 10px rgba(237, 218, 167, 0.4);
+}
+
+.atmosphere-urano {
+    box-shadow: 0 0 30px 10px rgba(157, 222, 240, 0.4);
+}
+
+.atmosphere-netuno {
+    box-shadow: 0 0 30px 10px rgba(63, 84, 186, 0.4);
 } 

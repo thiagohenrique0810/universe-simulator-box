@@ -36,7 +36,7 @@ let planetVelocities = {};
 let planetPositions = {};
 
 /**
- * Inicializa o sistema de física avançada
+ * Inicializa o sistema de física com gravidade
  * @param {Object} planets - Objeto contendo referências aos corpos celestes
  * @param {Object} PLANET_DATA - Dados dos planetas
  */
@@ -48,7 +48,25 @@ export function initGravityPhysics(planets, PLANET_DATA) {
         if (planetName === 'sol') continue; // O Sol é fixo no nosso modelo
         
         const planet = planets[planetName];
-        const planetData = PLANET_DATA[planetName];
+        let planetData;
+        
+        // Verificar se é um planeta regular ou um objeto do Cinturão de Kuiper
+        if (PLANET_DATA[planetName]) {
+            // Planeta regular
+            planetData = PLANET_DATA[planetName];
+        } else if (PLANET_DATA.cinturaoKuiper && PLANET_DATA.cinturaoKuiper.planetasAnoes) {
+            // Tentar encontrar nos planetas anões do Cinturão de Kuiper
+            const dwarfPlanet = PLANET_DATA.cinturaoKuiper.planetasAnoes.find(p => p.id === planetName);
+            if (dwarfPlanet) {
+                planetData = dwarfPlanet;
+            } else {
+                console.warn(`Dados não encontrados para o objeto: ${planetName}`);
+                continue; // Pular este objeto se não encontrar dados
+            }
+        } else {
+            console.warn(`Dados não encontrados para o objeto: ${planetName}`);
+            continue; // Pular este objeto se não encontrar dados
+        }
         
         // Obter a posição atual do planeta
         const position = new THREE.Vector3();
@@ -323,9 +341,25 @@ export function resetOrbits(planets, PLANET_DATA) {
         if (planetName === 'sol') continue;
         
         const planet = planets[planetName];
-        const planetData = PLANET_DATA[planetName];
+        let planetData;
         
-        if (!planetData) continue;
+        // Verificar se é um planeta regular ou um objeto do Cinturão de Kuiper
+        if (PLANET_DATA[planetName]) {
+            // Planeta regular
+            planetData = PLANET_DATA[planetName];
+        } else if (PLANET_DATA.cinturaoKuiper && PLANET_DATA.cinturaoKuiper.planetasAnoes) {
+            // Tentar encontrar nos planetas anões do Cinturão de Kuiper
+            const dwarfPlanet = PLANET_DATA.cinturaoKuiper.planetasAnoes.find(p => p.id === planetName);
+            if (dwarfPlanet) {
+                planetData = dwarfPlanet;
+            } else {
+                console.warn(`Dados não encontrados para resetar órbita: ${planetName}`);
+                continue; // Pular este objeto se não encontrar dados
+            }
+        } else {
+            console.warn(`Dados não encontrados para resetar órbita: ${planetName}`);
+            continue; // Pular este objeto se não encontrar dados
+        }
         
         // Calcular posição inicial
         const distance = planetData.distance || 10;
@@ -404,10 +438,24 @@ function resetMoon(moon, planet, planetName, PLANET_DATA) {
  * @returns {Object|null} - Dados da lua ou null se não encontrada
  */
 function findMoonData(PLANET_DATA, planetName, moonName) {
+    // Verificar se é um planeta regular
     const planet = PLANET_DATA[planetName];
     
-    if (!planet || !planet.satellites) return null;
+    if (planet && planet.satellites) {
+        const moon = planet.satellites.find(moon => moon.name === moonName);
+        if (moon) return moon;
+    }
     
-    const moon = planet.satellites.find(moon => moon.name === moonName);
-    return moon || null;
+    // Se não encontrou ou não é um planeta regular, procurar em planetas anões
+    if (PLANET_DATA.cinturaoKuiper && PLANET_DATA.cinturaoKuiper.planetasAnoes) {
+        const dwarfPlanet = PLANET_DATA.cinturaoKuiper.planetasAnoes.find(p => p.id === planetName);
+        
+        if (dwarfPlanet && dwarfPlanet.satellites) {
+            const moon = dwarfPlanet.satellites.find(moon => moon.name === moonName);
+            if (moon) return moon;
+        }
+    }
+    
+    // Não encontrou em nenhum lugar
+    return null;
 } 
