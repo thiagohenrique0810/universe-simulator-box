@@ -624,23 +624,32 @@ function createSunGlow(sol, scene) {
     let time = 0;
     
     sol.userData.updateGlow = function() {
-        // Atualizar posição do glow
-        glow.position.copy(sol.position);
+        // Verificar se os objetos existem antes de atualizá-los
+        if (glow && sol && sol.position) {
+            // Atualizar posição do glow
+            glow.position.copy(sol.position);
+        }
         
         // Rotacionar o sol lentamente
-        sol.rotation.y += sol.userData.rotationSpeed * 0.5;
+        if (sol && sol.userData && typeof sol.userData.rotationSpeed === 'number') {
+            sol.rotation.y += sol.userData.rotationSpeed * 0.5;
+        }
         
         // Atualizar o tempo para animar o glow
         time += 0.01;
         
         // Variar sutilmente o tamanho do glow para simular a atividade solar
-        const pulseFactor = 1 + 0.05 * Math.sin(time);
-        glow.scale.set(pulseFactor, pulseFactor, pulseFactor);
+        if (glow && glow.scale) {
+            const pulseFactor = 1 + 0.05 * Math.sin(time);
+            glow.scale.set(pulseFactor, pulseFactor, pulseFactor);
+        }
         
         // Atualizar a coroa solar
-        corona.position.copy(sol.position);
-        const coronaPulseFactor = 1 + 0.08 * Math.cos(time * 0.8);
-        corona.scale.set(coronaPulseFactor, coronaPulseFactor, coronaPulseFactor);
+        if (corona && sol && sol.position && corona.scale) {
+            corona.position.copy(sol.position);
+            const coronaPulseFactor = 1 + 0.08 * Math.cos(time * 0.8);
+            corona.scale.set(coronaPulseFactor, coronaPulseFactor, coronaPulseFactor);
+        }
     };
     
     // Chamar a função inicialmente

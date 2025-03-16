@@ -614,8 +614,10 @@ function setupControlEvents() {
             if (planet.userData && planet.userData.isDwarfPlanet) {
                 planet.visible = visible;
                 // Também ajustar visibilidade das órbitas
-                const orbit = orbits[planetName];
+                const orbitsObj = getOrbits(); // Obter o objeto orbits usando a função importada
+                const orbit = orbitsObj[planetName];
                 if (orbit) {
+                    const orbitLinesVisible = document.querySelector('#toggle-orbits')?.checked || false;
                     orbit.visible = visible && orbitLinesVisible;
                 }
             }
