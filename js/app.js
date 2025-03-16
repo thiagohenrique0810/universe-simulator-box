@@ -319,6 +319,14 @@ function init() {
     // Inicializar o painel de controle de missões
     initMissionsPanel(missionsSystem);
     
+    // Adicionar listener para controle de visibilidade das missões espaciais
+    document.addEventListener('toggle-space-missions', function(event) {
+        const visible = event.detail.visible;
+        if (missionsSystem && missionsSystem.setAllMissionsVisible) {
+            missionsSystem.setAllMissionsVisible(visible);
+        }
+    });
+    
     // Inicializar o sistema VR
     vrSystem = initVRSystem(scene, renderer, camera, controls, planets);
     if (vrSystem.isVRSupported) {

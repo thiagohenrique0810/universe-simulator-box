@@ -135,27 +135,27 @@ export function createCelestialBodies(scene, PLANET_DATA) {
         planets[planetName] = planet;
         
         // Adicionar anéis para Saturno
-        if (planetData.rings) {
+        if (planetName === 'saturno' && planetData.rings) {
             createSaturnRings(planet, planetData);
         }
         
         // Adicionar anéis para Urano e Netuno
         if (planetName === 'urano') {
             createPlanetRings(planet, planetData, {
-                innerRadius: 0.3,
-                outerRadius: 0.8,
-                color: 0xc1d1e0,
-                opacity: 0.7,
+                innerRadius: 0.45,
+                outerRadius: 0.50,
+                color: 0xdddddd,
+                opacity: 0.02,
                 inclination: 97 // Inclinação extrema dos anéis de Urano
             });
         }
         
         if (planetName === 'netuno') {
             createPlanetRings(planet, planetData, {
-                innerRadius: 0.3,
-                outerRadius: 0.6,
-                color: 0x3f54ba,
-                opacity: 0.5,
+                innerRadius: 0.45,
+                outerRadius: 0.48,
+                color: 0xcccccc,
+                opacity: 0.015,
                 inclination: 29 // Inclinação dos anéis de Netuno
             });
         }
@@ -824,13 +824,35 @@ function createPlanetRings(planet, planetData, ringsData) {
         128
     );
     
-    // Material para os anéis
-    const ringMaterial = new THREE.MeshBasicMaterial({
-        color: color,
-        transparent: true,
-        opacity: opacity,
-        side: THREE.DoubleSide
-    });
+    // Definir a transparência baseada no planeta
+    let finalOpacity = opacity;
+    if (planetName === 'urano' || planetName === 'netuno') {
+        // Anéis de Urano e Netuno são extremamente tênues na realidade
+        finalOpacity = opacity * 0.3; // Reduzir ainda mais a opacidade
+    }
+    
+    // Material para os anéis - condições específicas para Urano e Netuno
+    let ringMaterial;
+    
+    if (planetName === 'urano' || planetName === 'netuno') {
+        // Material mais tênue para anéis quase invisíveis
+        ringMaterial = new THREE.MeshBasicMaterial({
+            color: color,
+            transparent: true,
+            opacity: finalOpacity,
+            side: THREE.DoubleSide,
+            blending: THREE.AdditiveBlending, // Usar blending aditivo para tornar ainda mais sutil
+            depthWrite: false  // Evitar problemas de z-fighting
+        });
+    } else {
+        // Material normal para Saturno
+        ringMaterial = new THREE.MeshBasicMaterial({
+            color: color,
+            transparent: true,
+            opacity: finalOpacity,
+            side: THREE.DoubleSide
+        });
+    }
     
     // Criar o mesh do anel
     const ring = new THREE.Mesh(ringGeometry, ringMaterial);

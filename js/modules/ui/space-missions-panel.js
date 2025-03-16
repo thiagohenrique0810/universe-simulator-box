@@ -20,6 +20,63 @@ export function initMissionsPanel(missionsSystem) {
     // Criar o painel de detalhes de missão
     createMissionDetailsPanel();
     
+    // Adicionar listener para sincronizar interface quando a visibilidade global das missões for alterada
+    document.addEventListener('toggle-space-missions', function(event) {
+        const visible = event.detail.visible;
+        
+        // Encontrar o fieldset de missões espaciais
+        const missionsLegends = document.querySelectorAll('.controls-section legend');
+        let missionsFieldset = null;
+        missionsLegends.forEach(legend => {
+            if (legend.textContent === 'Missões Espaciais') {
+                missionsFieldset = legend.closest('.controls-section');
+            }
+        });
+        
+        if (!visible) {
+            // Atualizar a interface para refletir que todas as missões estão ocultas
+            const missionsList = document.getElementById('missions-list');
+            if (missionsList) {
+                const missionItems = missionsList.querySelectorAll('.mission-item');
+                missionItems.forEach(item => {
+                    item.classList.remove('active');
+                });
+            }
+            
+            // Desabilitar os botões de controle enquanto a visibilidade global estiver desligada
+            const buttonsContainer = document.querySelector('.buttons-container');
+            if (buttonsContainer) {
+                const buttons = buttonsContainer.querySelectorAll('button');
+                buttons.forEach(button => {
+                    button.disabled = true;
+                });
+            }
+            
+            // Ocultar o painel de missões
+            if (missionsFieldset) {
+                missionsFieldset.style.display = 'none';
+            }
+        } else {
+            // Quando a visibilidade global for ativada, reativar os botões
+            const buttonsContainer = document.querySelector('.buttons-container');
+            if (buttonsContainer) {
+                const buttons = buttonsContainer.querySelectorAll('button');
+                buttons.forEach(button => {
+                    button.disabled = false;
+                });
+            }
+            
+            // Mostrar o painel de missões novamente
+            if (missionsFieldset) {
+                missionsFieldset.style.display = '';
+            }
+            
+            // Nota: Não reativamos automaticamente as missões
+        }
+        // Quando visível novamente, não é necessário fazer nada especial, 
+        // pois as missões não são automaticamente reativadas
+    });
+    
     console.log('Painel de controle de missões espaciais inicializado');
     
     // Retornar API pública

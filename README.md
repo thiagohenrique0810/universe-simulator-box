@@ -7,7 +7,7 @@ Um simulador 3D interativo do Sistema Solar desenvolvido com Three.js, que permi
 - **Corpos Celestes Detalhados**: Representação 3D do Sol, planetas, luas, planetas anões e objetos do Cinturão de Kuiper com texturas realistas
 - **Sistema de Órbitas**: Órbitas planetárias com animação baseadas nas leis de Kepler
 - **Rotação Planetária**: Rotação dos planetas em torno de seu próprio eixo
-- **Anéis Planetários**: Visualização detalhada dos anéis de Saturno, Urano e Netuno com texturas e inclinações realistas
+- **Anéis Planetários**: Visualização detalhada dos anéis de Saturno e representação dos anéis mais tênues de Urano e Netuno com suas respectivas inclinações
 - **Cinturão de Asteroides**: Simulação do cinturão de asteroides entre Marte e Júpiter
 - **Cinturão de Kuiper**: Representação de Plutão e outros planetas anões como Éris, Makemake e Haumea
 - **Nuvem de Oort**: Visualização da região mais externa do Sistema Solar com cometas de longo período

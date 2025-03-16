@@ -16,6 +16,7 @@ let shadowsVisible = true;
 let eclipsesEnabled = true;
 let kuiperBeltVisible = true;
 let kuiperBeltSmallObjectsVisible = true;
+let spaceMissionsVisible = true;
 
 /**
  * Cria os controles de visibilidade para elementos do sistema solar
@@ -114,6 +115,12 @@ export function createVisibilityControls(container, initiallyOpen = true) {
             label: 'Objetos Menores de Kuiper',
             eventName: 'toggle-kuiper-small-objects',
             defaultChecked: true
+        },
+        {
+            id: 'show-space-missions',
+            label: 'Missões Espaciais',
+            eventName: 'toggle-space-missions',
+            defaultChecked: true
         }
     ];
     
@@ -153,6 +160,21 @@ export function createVisibilityControls(container, initiallyOpen = true) {
             }));
         });
     });
+    
+    // Adicionar listeners para atualizar variáveis de estado
+    document.addEventListener('toggle-orbits', (e) => orbitLinesVisible = e.detail.visible);
+    document.addEventListener('toggle-stars', (e) => starsVisible = e.detail.visible);
+    document.addEventListener('toggle-skybox', (e) => skyboxVisible = e.detail.visible);
+    document.addEventListener('toggle-asteroid-belt', (e) => asteroidBeltVisible = e.detail.visible);
+    document.addEventListener('toggle-belt-ring', (e) => asteroidBeltRingVisible = e.detail.visible);
+    document.addEventListener('toggle-saturn-rings', (e) => saturnRingsVisible = e.detail.visible);
+    document.addEventListener('toggle-uranus-rings', (e) => uranusRingsVisible = e.detail.visible);
+    document.addEventListener('toggle-neptune-rings', (e) => neptuneRingsVisible = e.detail.visible);
+    document.addEventListener('toggle-shadows', (e) => shadowsVisible = e.detail.visible);
+    document.addEventListener('toggle-eclipses', (e) => eclipsesEnabled = e.detail.visible);
+    document.addEventListener('toggle-kuiper-belt', (e) => kuiperBeltVisible = e.detail.visible);
+    document.addEventListener('toggle-kuiper-small-objects', (e) => kuiperBeltSmallObjectsVisible = e.detail.visible);
+    document.addEventListener('toggle-space-missions', (e) => spaceMissionsVisible = e.detail.visible);
 }
 
 /**
@@ -172,6 +194,7 @@ export function getVisibilityState() {
         shadowsVisible,
         eclipsesEnabled,
         kuiperBeltVisible,
-        kuiperBeltSmallObjectsVisible
+        kuiperBeltSmallObjectsVisible,
+        spaceMissionsVisible
     };
 } 

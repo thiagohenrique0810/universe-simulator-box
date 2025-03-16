@@ -42,7 +42,8 @@ export function initSpaceMissions(sceneRef, planets) {
         getActiveMissions: () => activeMissions,
         updateMissions: updateMissions,
         getAllMissions: () => missions,
-        getMissionById: (id) => missions.find(m => m.id === id)
+        getMissionById: (id) => missions.find(m => m.id === id),
+        setAllMissionsVisible: setAllMissionsVisible
     };
 }
 
@@ -688,4 +689,39 @@ function updateSpacecraftPosition(missionContainer, progress) {
     if (spacecraft.material) {
         spacecraft.material.opacity = brightness;
     }
+}
+
+/**
+ * Define a visibilidade de todas as missões
+ * @param {boolean} visible - Se as missões devem estar visíveis ou não
+ */
+function setAllMissionsVisible(visible) {
+    // Primeiro, definir a visibilidade do container principal
+    if (missionsContainer) {
+        missionsContainer.visible = visible;
+    }
+    
+    if (!visible) {
+        // Desativar todas as missões ativas quando desligar a visibilidade
+        const missionsToDeactivate = [...activeMissions]; // Criar cópia para evitar problemas ao modificar a array original
+        missionsToDeactivate.forEach(mission => {
+            deactivateMission(mission.userData.missionId);
+        });
+        
+        // Garantir que TODAS as missões estejam invisíveis (mesmo as que não estavam ativas)
+        missionsContainer.traverse(object => {
+            if (object.name && object.name.startsWith('mission-')) {
+                object.visible = false;
+            }
+        });
+        
+        console.log('Todas as missões foram desativadas e ocultadas');
+    } else {
+        // Quando reativar, apenas tornar o container visível, 
+        // mas as missões individuais permanecem ocultas até serem explicitamente ativadas
+        console.log('Container de missões agora está visível');
+        // As missões individuais só ficam visíveis quando ativadas explicitamente pelo usuário
+    }
+    
+    return visible;
 } 
