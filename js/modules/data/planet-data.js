@@ -231,6 +231,7 @@ export const PLANET_DATA = {
         rotationSpeed: 0.03,
         inclination: 0.8,
         orbitColor: 0x88ccff,
+        rings: true,
         satellites: [
             {
                 name: 'titania',
@@ -289,6 +290,7 @@ export const PLANET_DATA = {
         rotationSpeed: 0.04,
         inclination: 1.77,
         orbitColor: 0x2233ff,
+        rings: true,
         satellites: [
             {
                 name: 'tritão',

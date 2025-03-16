@@ -3,6 +3,9 @@
  * Gerencia a seleção de planetas por clique e exibição de informações
  */
 
+// Importar dados dos planetas
+import { PLANET_DATA } from '../data/planet-data.js';
+
 // Variável para o planeta selecionado atualmente
 let selectedPlanet = null;
 let selectedObject = null;
@@ -293,11 +296,11 @@ export function setupMouseEvents(camera, scene, renderer, planets, camera_utils)
     
     // Verifica se o planeta é um planeta anão
     const isDwarfPlanet = (name) => {
-        if (!window.PLANET_DATA || !window.PLANET_DATA.cinturaoKuiper || !window.PLANET_DATA.cinturaoKuiper.planetasAnoes) {
+        if (!PLANET_DATA || !PLANET_DATA.cinturaoKuiper || !PLANET_DATA.cinturaoKuiper.planetasAnoes) {
             return false;
         }
         
-        return window.PLANET_DATA.cinturaoKuiper.planetasAnoes.some(planet => planet.id === name);
+        return PLANET_DATA.cinturaoKuiper.planetasAnoes.some(planet => planet.id === name);
     };
     
     // Função para detectar cliques nos planetas
@@ -322,23 +325,29 @@ export function setupMouseEvents(camera, scene, renderer, planets, camera_utils)
             // Determinando se é um planeta, lua ou outro objeto celeste
             if (objectName === 'sol') {
                 // Mostra informações do sol
-                showSunInfo();
+                if (onShowPlanetInfo) {
+                    onShowPlanetInfo('sol');
+                }
             } else if (isDwarfPlanet(objectName)) {
                 // É um planeta anão do Cinturão de Kuiper
                 console.log(`Planeta anão detectado: ${objectName}`);
-                showDwarfPlanetInfo(objectName);
+                if (onShowDwarfPlanetInfo) {
+                    onShowDwarfPlanetInfo(objectName);
+                }
             } else if (isMoon(objectName)) {
                 // É uma lua
                 console.log(`Lua detectada: ${objectName}`);
                 const parentPlanet = findParentPlanet(objectName);
                 
-                if (parentPlanet) {
-                    showMoonInfo(objectName, parentPlanet);
+                if (parentPlanet && onShowMoonInfo) {
+                    onShowMoonInfo(objectName, parentPlanet);
                 }
             } else {
                 // É um planeta
                 console.log(`Planeta detectado: ${objectName}`);
-                showPlanetInfo(objectName);
+                if (onShowPlanetInfo) {
+                    onShowPlanetInfo(objectName);
+                }
                 
                 // Destaca o planeta ao clicar
                 highlightObject(clickedObject);
@@ -410,11 +419,11 @@ export function setupMouseEvents(camera, scene, renderer, planets, camera_utils)
             }
         }
         
-        // Verificar luas de planetas anões
+        // Verificar também nos planetas anões
         if (PLANET_DATA.cinturaoKuiper && PLANET_DATA.cinturaoKuiper.planetasAnoes) {
-            for (const dwarfPlanet of PLANET_DATA.cinturaoKuiper.planetasAnoes) {
-                if (dwarfPlanet.satellites) {
-                    for (const satellite of dwarfPlanet.satellites) {
+            for (const planetaAnao of PLANET_DATA.cinturaoKuiper.planetasAnoes) {
+                if (planetaAnao.satellites) {
+                    for (const satellite of planetaAnao.satellites) {
                         if (satellite.name === objectName) {
                             return true;
                         }

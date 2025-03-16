@@ -9,6 +9,7 @@ export {
     createToggleControlsButton,
     createAccordionSection,
     createCheckbox,
+    createSlider,
     showTemporaryMessage
 };
 
@@ -217,4 +218,43 @@ function showTemporaryMessage(message, isError = false) {
             }
         }, 500);
     }, 3000);
+}
+
+/**
+ * Cria um controle deslizante (slider) com valores mínimo, máximo e atual
+ * @param {Object} options - Opções do slider
+ * @param {Number} options.min - Valor mínimo
+ * @param {Number} options.max - Valor máximo
+ * @param {Number} options.step - Incremento do slider
+ * @param {Number} options.value - Valor inicial
+ * @param {Function} options.onChange - Função chamada quando o valor muda
+ * @returns {HTMLElement} Elemento do slider
+ */
+function createSlider(options) {
+    const { min, max, step, value, onChange } = options;
+    
+    // Criar elemento de slider
+    const slider = document.createElement('input');
+    slider.type = 'range';
+    slider.min = min || 0;
+    slider.max = max || 100;
+    slider.step = step || 1;
+    slider.value = value || 0;
+    
+    // Estilizar o slider
+    slider.style.width = '100%';
+    slider.style.maxWidth = '200px';
+    slider.style.margin = '0';
+    slider.style.height = '20px';
+    
+    // Adicionar evento de mudança
+    slider.addEventListener('input', function() {
+        // Converter para número e passar para a função de callback
+        const numValue = parseFloat(this.value);
+        if (onChange) {
+            onChange(numValue);
+        }
+    });
+    
+    return slider;
 } 

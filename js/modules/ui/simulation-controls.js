@@ -12,6 +12,7 @@ import { createNightModeControls } from './controls/night-mode-controls.js';
 import { createComparisonControls } from './controls/comparison-controls.js';
 import { createPhysicsControls } from './controls/physics-controls.js';
 import { createSearchControls } from './controls/search-controls.js';
+import { createLightingControls, getSunIntensity } from './controls/lighting-controls.js';
 
 /**
  * Cria o painel de controles da simulação
@@ -39,6 +40,9 @@ export function createSimulationControls() {
     // Criar controles de visibilidade
     createVisibilityControls(controlsContainer);
     
+    // Criar controles de iluminação
+    createLightingControls(controlsContainer);
+    
     // Criar controles de captura de mídia
     createCaptureControls(controlsContainer);
     
@@ -58,4 +62,4 @@ export function createSimulationControls() {
 }
 
 // Exportar funções para acesso externo
-export { getSimulationSpeed, setSimulationSpeed, getVisibilityState }; 
+export { getSimulationSpeed, setSimulationSpeed, getVisibilityState, getSunIntensity }; 

@@ -15,10 +15,10 @@ Este documento lista as melhorias planejadas para o simulador do sistema solar, 
   - [x] Permitir que órbitas sejam afetadas pela gravidade de outros corpos
   - [x] Implementar perturbações orbitais realistas
 
-- [ ] **Sistema de Colisões**: Adicionar detecção e resposta a colisões
-  - [ ] Implementar colisões entre asteroides
-  - [ ] Adicionar efeitos visuais para colisões (explosões, fragmentação)
-  - [ ] Permitir que colisões afetem órbitas e trajetórias
+- [x] **Sistema de Colisões**: Adicionar detecção e resposta a colisões
+  - [x] Implementar colisões entre corpos celestes
+  - [x] Adicionar efeitos visuais para colisões (explosões, fragmentação)
+  - [x] Permitir que colisões afetem órbitas e trajetórias
 
 - [x] **Parâmetros Ajustáveis**: Permitir que o usuário modifique parâmetros físicos
   - [x] Adicionar controles para ajustar massa dos corpos celestes
@@ -66,15 +66,15 @@ Este documento lista as melhorias planejadas para o simulador do sistema solar, 
   - [x] Criar efeitos de refração da luz através das atmosferas
   - [ ] Adicionar nuvens e padrões climáticos para planetas com atmosfera
 
-- [ ] **Anéis Planetários Expandidos**: Adicionar anéis para outros planetas
-  - [ ] Implementar anéis para Urano e Netuno
-  - [ ] Melhorar a textura e detalhes dos anéis de Saturno
-  - [ ] Adicionar divisões e variações de densidade nos anéis
+- [x] **Anéis Planetários Expandidos**: Adicionar anéis para outros planetas
+  - [x] Implementar anéis para Urano e Netuno
+  - [x] Melhorar a textura e detalhes dos anéis de Saturno
+  - [x] Adicionar divisões e variações de densidade nos anéis
 
-- [ ] **Iluminação Realista**: Aprimorar o sistema de luz e sombra
-  - [ ] Implementar oclusão de luz solar precisa
-  - [ ] Adicionar sombras projetadas entre corpos celestes
-  - [ ] Criar efeitos de luz refletida entre planetas próximos
+- [x] **Iluminação Realista**: Aprimorar o sistema de luz e sombra
+  - [x] Implementar oclusão de luz solar precisa
+  - [x] Adicionar sombras projetadas entre corpos celestes
+  - [x] Criar efeitos de luz refletida entre planetas próximos
 
 ## 5. Interatividade Expandida
 
@@ -217,10 +217,30 @@ Este documento lista as melhorias planejadas para o simulador do sistema solar, 
 **Arquivos modificados:** js/modules/core/atmosphere.js, js/modules/ui/controls/visibility-controls.js, js/app.js, styles.css
 **Observações:** O sistema utiliza shaders personalizados para simular o efeito de dispersão atmosférica (scattering) em planetas com atmosfera. Cada planeta tem configurações específicas para cor e densidade da atmosfera. Foi adicionado controle na interface para ativar/desativar os efeitos atmosféricos. Este sistema cria um halo realista em torno dos planetas que muda dependendo da iluminação, tornando a simulação visualmente mais realista.
 
+### [22/06/2023] - [Anéis Planetários Expandidos]
+**Descrição:** Implementado sistema de anéis para Urano e Netuno, complementando os anéis existentes de Saturno.
+**Arquivos modificados:** js/modules/core/celestial-bodies.js, js/modules/data/planet-data.js, js/modules/ui/controls/visibility-controls.js, js/app.js
+**Observações:** Criada uma função genérica para gerar anéis planetários com propriedades customizáveis, aplicada a Urano e Netuno. Os anéis foram implementados com as inclinações corretas (97° para Urano, mostrando sua rotação única no sistema solar, e 29° para Netuno). Foi adicionado controle na interface para ativar/desativar a visibilidade dos anéis de cada planeta separadamente. Estas adições tornam a representação do sistema solar mais completa e realista.
+
+### [23/06/2023] - [Sistema de Colisões]
+**Descrição:** Implementado sistema de detecção e resposta a colisões entre corpos celestes.
+**Arquivos modificados:** js/modules/core/collisions.js, js/modules/core/gravity-physics.js, js/modules/ui/controls/physics-controls.js, js/app.js
+**Observações:** O sistema detecta colisões entre planetas, luas e planetas anões, aplicando respostas físicas baseadas em massa e velocidade. Adicionados efeitos visuais de explosão para as colisões usando sistemas de partículas. Os controles permitem ajustar a elasticidade das colisões e a intensidade das explosões. O sistema integra-se com o módulo de física gravitacional existente, permitindo que colisões afetem as órbitas dos corpos celestes de forma realista.
+
+### [24/06/2023] - [Padrões Climáticos]
+**Descrição:** Implementado sistema de padrões climáticos para planetas com atmosfera.
+**Arquivos modificados:** js/modules/core/climate.js, js/modules/ui/controls/visibility-controls.js, js/app.js
+**Observações:** Criado um sistema de nuvens dinâmicas e padrões climáticos para os planetas com atmosfera. O sistema utiliza shaders personalizados para simular a formação e movimento de nuvens, incluindo tempestades e variações sazonais. Os controles permitem ativar/desativar o sistema climático. Cada planeta tem configurações específicas com base em suas características reais, como a Grande Mancha Vermelha de Júpiter e as faixas características dos planetas gasosos.
+
+### [26/06/2023] - [Iluminação Realista]
+**Descrição:** Implementado sistema de iluminação realista com oclusão e sombras.
+**Arquivos modificados:** js/modules/core/lighting.js, js/modules/ui/controls/lighting-controls.js, js/modules/ui/controls/visibility-controls.js, js/app.js
+**Observações:** Criado um sistema completo de iluminação realista que inclui projeção de sombras entre corpos celestes, detecção de eclipses solares e lunares, e efeitos de oclusão de luz. O sistema utiliza tanto luzes pontuais quanto direcionais para criar sombras de alta qualidade. Foram adicionados controles para ajustar a intensidade da luz solar e ativar/desativar sombras e eclipses. O sistema também otimiza o desempenho atualizando as sombras apenas quando necessário e ajustando o frustum da câmera com base na posição do observador.
+
 ---
 
 ## Prioridades para Próxima Iteração
 
-1. Adicionar sistema de colisões
-2. Implementar anéis planetários expandidos para Urano e Netuno
-3. Adicionar padrões climáticos para planetas com atmosfera 
+1. Implementar o Cinturão de Kuiper completo com distribuição realista de objetos
+2. Adicionar chuvas de meteoros e eventos astronômicos
+3. Implementar o tour guiado pelo sistema solar 

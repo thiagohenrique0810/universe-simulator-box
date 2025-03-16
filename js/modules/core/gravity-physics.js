@@ -138,9 +138,10 @@ export function initGravityPhysics(planets, PLANET_DATA) {
  * @param {Object} planets - Objeto contendo referências aos corpos celestes
  * @param {Number} deltaTime - Tempo decorrido desde o último quadro
  * @param {Number} timeScale - Escala de tempo da simulação
+ * @returns {Object} Objeto contendo as posições e velocidades atualizadas
  */
 export function updateGravityPhysics(planets, deltaTime, timeScale) {
-    if (!physicsEnabled) return;
+    if (!physicsEnabled) return { positions: {}, velocities: {} };
     
     // Fator de escala de tempo para a simulação
     const scaledDeltaTime = deltaTime * timeScale * 1000; // Escalar para ter efeitos visíveis
@@ -197,6 +198,12 @@ export function updateGravityPhysics(planets, deltaTime, timeScale) {
         // Aplicar a nova posição ao objeto 3D
         object.position.copy(position);
     }
+    
+    // Retornar posições e velocidades atualizadas para uso por outros sistemas
+    return {
+        positions: Object.assign({}, planetPositions),
+        velocities: Object.assign({}, planetVelocities)
+    };
 }
 
 /**

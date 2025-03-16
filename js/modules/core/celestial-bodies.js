@@ -139,6 +139,27 @@ export function createCelestialBodies(scene, PLANET_DATA) {
             createSaturnRings(planet, planetData);
         }
         
+        // Adicionar anéis para Urano e Netuno
+        if (planetName === 'urano') {
+            createPlanetRings(planet, planetData, {
+                innerRadius: 0.3,
+                outerRadius: 0.8,
+                color: 0xc1d1e0,
+                opacity: 0.7,
+                inclination: 97 // Inclinação extrema dos anéis de Urano
+            });
+        }
+        
+        if (planetName === 'netuno') {
+            createPlanetRings(planet, planetData, {
+                innerRadius: 0.3,
+                outerRadius: 0.6,
+                color: 0x3f54ba,
+                opacity: 0.5,
+                inclination: 29 // Inclinação dos anéis de Netuno
+            });
+        }
+        
         // Adicionar satélites (luas)
         if (planetData.satellites) {
             planetData.satellites.forEach(satellite => {
@@ -393,17 +414,47 @@ function createMoon(planet, satellite) {
 function loadTextures(PLANET_DATA) {
     const textureLoader = new THREE.TextureLoader();
     
+    console.log("Iniciando carregamento de texturas para planetas...");
+    
+    // Carregar textura do Sol
+    if (PLANET_DATA.sol && PLANET_DATA.sol.textureUrl) {
+        console.log(`Carregando textura do Sol: ${PLANET_DATA.sol.textureUrl}`);
+        textureLoader.load(
+            PLANET_DATA.sol.textureUrl,
+            function(texture) {
+                if (planets.sol && planets.sol.material) {
+                    console.log("Aplicando textura ao Sol");
+                    planets.sol.material.map = texture;
+                    planets.sol.material.needsUpdate = true;
+                }
+            },
+            undefined,
+            function(err) {
+                console.error("Erro ao carregar textura do Sol:", err);
+            }
+        );
+    }
+    
     // Função para carregar textura de um planeta
     function loadPlanetTexture(planetName, textureUrl) {
+        console.log(`Carregando textura para ${planetName}: ${textureUrl}`);
+        
         textureLoader.load(
             textureUrl,
             function(texture) {
                 if (planets[planetName] && planets[planetName].material) {
+                    console.log(`Textura carregada e aplicada para ${planetName}`);
                     planets[planetName].material.map = texture;
                     planets[planetName].material.needsUpdate = true;
+                } else {
+                    console.warn(`Planeta ${planetName} ou seu material não encontrado`);
                 }
             },
-            undefined,
+            // Callback de progresso (opcional)
+            function(xhr) {
+                console.log(`${planetName}: ${(xhr.loaded / xhr.total * 100)}% carregado`);
+            },
+            // Callback de erro
             function(err) {
                 console.error(`Erro ao carregar textura para ${planetName}:`, err);
                 // Quando falhar, usar cores sólidas para evitar o efeito de piscagem
@@ -431,20 +482,80 @@ function loadTextures(PLANET_DATA) {
         );
     }
     
-    // Verificar se as texturas existem antes de tentar carregá-las
-    // Carregar textura para cada planeta
-    for (const planetName in planets) {
-        if (planetName !== 'sol' && planets[planetName]) {
-            const planet = planets[planetName];
-            // Verificar se o caminho da textura está em userData
-            if (planet.userData && PLANET_DATA[planetName]) {
-                const textureUrl = PLANET_DATA[planetName].textureUrl;
-                if (textureUrl) {
-                    loadPlanetTexture(planetName, textureUrl);
+    // Carregar texturas para cada planeta
+    for (const planetName in PLANET_DATA) {
+        if (planetName === 'sol' || planetName === 'cinturaoKuiper') continue; // Sol já tratado, Cinturão de Kuiper separado
+        
+        const planetData = PLANET_DATA[planetName];
+        
+        if (planetData.textureUrl) {
+            loadPlanetTexture(planetName, planetData.textureUrl);
+        } else {
+            console.warn(`Planeta ${planetName} não tem URL de textura definida`);
+        }
+        
+        // Carregar texturas para luas também
+        if (planetData.satellites) {
+            planetData.satellites.forEach(satellite => {
+                if (satellite.textureUrl) {
+                    // Para luas, precisamos encontrar o objeto Mesh dentro do planeta pai
+                    const moon = planets[planetName].children.find(child => child.name === satellite.name);
+                    
+                    if (moon && moon.material) {
+                        textureLoader.load(
+                            satellite.textureUrl,
+                            function(texture) {
+                                moon.material.map = texture;
+                                moon.material.needsUpdate = true;
+                                console.log(`Textura aplicada para lua ${satellite.name}`);
+                            },
+                            undefined,
+                            function(err) {
+                                console.error(`Erro ao carregar textura para lua ${satellite.name}:`, err);
+                            }
+                        );
+                    }
                 }
-            }
+            });
         }
     }
+    
+    // Carregar texturas para planetas anões do Cinturão de Kuiper
+    if (PLANET_DATA.cinturaoKuiper && PLANET_DATA.cinturaoKuiper.planetasAnoes) {
+        PLANET_DATA.cinturaoKuiper.planetasAnoes.forEach(dwarfPlanet => {
+            if (dwarfPlanet.textureUrl) {
+                loadPlanetTexture(dwarfPlanet.id, dwarfPlanet.textureUrl);
+            }
+            
+            // Carregar texturas para luas de planetas anões
+            if (dwarfPlanet.satellites) {
+                dwarfPlanet.satellites.forEach(satellite => {
+                    if (satellite.textureUrl) {
+                        const dwarfPlanetObj = planets[dwarfPlanet.id];
+                        if (dwarfPlanetObj) {
+                            const moon = dwarfPlanetObj.children.find(child => child.name === satellite.name);
+                            
+                            if (moon && moon.material) {
+                                textureLoader.load(
+                                    satellite.textureUrl,
+                                    function(texture) {
+                                        moon.material.map = texture;
+                                        moon.material.needsUpdate = true;
+                                    },
+                                    undefined,
+                                    function(err) {
+                                        console.error(`Erro ao carregar textura para lua ${satellite.name} do planeta anão ${dwarfPlanet.id}:`, err);
+                                    }
+                                );
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    }
+    
+    console.log("Solicitação de carregamento de texturas concluída");
 }
 
 /**
@@ -668,6 +779,56 @@ function createDwarfPlanetRings(planet, planetData) {
     // Adicionar inclinação personalizada se especificada
     const ringTilt = planetData.ringTilt || 5; // Valor padrão
     ring.rotation.z = THREE.MathUtils.degToRad(ringTilt);
+    
+    // Adicionar o anel ao container
+    ringsContainer.add(ring);
+    
+    // Marcar o planeta como tendo anéis
+    planet.userData.hasRings = true;
+    
+    // Adicionar o container dos anéis ao planeta
+    planet.add(ringsContainer);
+}
+
+/**
+ * Cria anéis para planetas
+ * @param {Object} planet - Objeto do planeta
+ * @param {Object} planetData - Dados do planeta
+ * @param {Object} ringsData - Dados dos anéis
+ */
+function createPlanetRings(planet, planetData, ringsData) {
+    // Criar um container para os anéis
+    const planetName = planet.name;
+    const ringsContainer = new THREE.Object3D();
+    ringsContainer.name = `aneis${planetName}Container`;
+    
+    // Dimensões dos anéis
+    const { innerRadius, outerRadius, color, opacity, inclination } = ringsData;
+    
+    // Usar a geometria de anel padrão do Three.js
+    const ringGeometry = new THREE.RingGeometry(
+        innerRadius,
+        outerRadius,
+        128
+    );
+    
+    // Material para os anéis
+    const ringMaterial = new THREE.MeshBasicMaterial({
+        color: color,
+        transparent: true,
+        opacity: opacity,
+        side: THREE.DoubleSide
+    });
+    
+    // Criar o mesh do anel
+    const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+    ring.name = `aneis${planetName}`;
+    
+    // Rotacionar para ficar no plano horizontal
+    ring.rotation.x = Math.PI / 2;
+    
+    // Adicionar inclinação personalizada se especificada
+    ring.rotation.z = THREE.MathUtils.degToRad(inclination);
     
     // Adicionar o anel ao container
     ringsContainer.add(ring);

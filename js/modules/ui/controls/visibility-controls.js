@@ -9,97 +9,136 @@ let starsVisible = true;
 let skyboxVisible = true;
 let asteroidBeltVisible = true;
 let saturnRingsVisible = true;
+let uranusRingsVisible = true;
+let neptuneRingsVisible = true;
 let asteroidBeltRingVisible = true;
+let shadowsVisible = true;
+let eclipsesEnabled = true;
 
 /**
  * Cria os controles de visibilidade para elementos do sistema solar
  * Permite mostrar/ocultar órbitas, estrelas, skybox, etc.
  */
-export function createVisibilityControls() {
-    // Criar o container para os controles
-    const container = document.createElement('div');
-    container.className = 'controls-section';
+export function createVisibilityControls(container, initiallyOpen = true) {
+    // Criar seção acordeão
+    const { content } = createAccordionSection(
+        container, 
+        'Visibilidade', 
+        initiallyOpen
+    );
     
-    // Adicionar título da seção
-    const title = document.createElement('h3');
-    title.textContent = 'Controles de Visibilidade';
-    title.className = 'section-title';
-    container.appendChild(title);
-    
-    // Controles de visibilidade
-    const controls = [
+    // Lista de elementos de visibilidade
+    const visibilityItems = [
         {
-            id: 'toggle-orbits',
-            label: 'Mostrar Órbitas',
-            checked: true,
-            event: 'toggle-orbits'
+            id: 'show-orbits',
+            label: 'Órbitas',
+            eventName: 'toggle-orbits',
+            defaultChecked: true
         },
         {
-            id: 'toggle-stars',
-            label: 'Mostrar Estrelas',
-            checked: true,
-            event: 'toggle-stars'
+            id: 'show-stars',
+            label: 'Estrelas',
+            eventName: 'toggle-stars',
+            defaultChecked: true
         },
         {
-            id: 'toggle-skybox',
-            label: 'Mostrar Skybox',
-            checked: true,
-            event: 'toggle-skybox'
+            id: 'show-skybox',
+            label: 'Fundo Estelar',
+            eventName: 'toggle-skybox',
+            defaultChecked: true
         },
         {
-            id: 'toggle-asteroid-belt',
-            label: 'Mostrar Cinturão de Asteroides',
-            checked: true,
-            event: 'toggle-asteroid-belt'
+            id: 'show-asteroid-belt',
+            label: 'Cinturão de Asteroides',
+            eventName: 'toggle-asteroid-belt',
+            defaultChecked: true
         },
         {
-            id: 'toggle-belt-ring',
-            label: 'Mostrar Anel do Cinturão',
-            checked: true,
-            event: 'toggle-belt-ring'
+            id: 'show-belt-ring',
+            label: 'Anel do Cinturão',
+            eventName: 'toggle-belt-ring',
+            defaultChecked: true
         },
         {
-            id: 'toggle-saturn-rings',
-            label: 'Mostrar Anéis de Saturno',
-            checked: true,
-            event: 'toggle-saturn-rings'
+            id: 'show-saturn-rings',
+            label: 'Anéis de Saturno',
+            eventName: 'toggle-saturn-rings',
+            defaultChecked: true
         },
         {
-            id: 'toggle-atmosphere',
-            label: 'Mostrar Efeitos Atmosféricos',
-            checked: true,
-            event: 'toggle-atmosphere'
+            id: 'show-uranus-rings',
+            label: 'Anéis de Urano',
+            eventName: 'toggle-uranus-rings',
+            defaultChecked: true
+        },
+        {
+            id: 'show-neptune-rings',
+            label: 'Anéis de Netuno',
+            eventName: 'toggle-neptune-rings',
+            defaultChecked: true
+        },
+        {
+            id: 'show-atmosphere',
+            label: 'Efeitos Atmosféricos',
+            eventName: 'toggle-atmosphere',
+            defaultChecked: true
+        },
+        {
+            id: 'show-climate',
+            label: 'Sistemas Climáticos',
+            eventName: 'toggle-climate',
+            defaultChecked: true
+        },
+        {
+            id: 'show-shadows',
+            label: 'Sombras',
+            eventName: 'toggle-shadows',
+            defaultChecked: true
+        },
+        {
+            id: 'show-eclipses',
+            label: 'Eclipses',
+            eventName: 'toggle-eclipses',
+            defaultChecked: true
         }
     ];
     
-    // Criar cada controle de visibilidade
-    controls.forEach(control => {
-        const controlContainer = document.createElement('div');
-        controlContainer.className = 'control-item';
+    // Criar container com duas colunas para os checkboxes
+    const gridContainer = document.createElement('div');
+    gridContainer.style.display = 'grid';
+    gridContainer.style.gridTemplateColumns = 'repeat(2, 1fr)';
+    gridContainer.style.gap = '5px';
+    gridContainer.style.marginTop = '10px';
+    content.appendChild(gridContainer);
+    
+    // Adicionar checkboxes para cada item de visibilidade
+    visibilityItems.forEach(item => {
+        const checkboxContainer = document.createElement('div');
+        checkboxContainer.style.display = 'flex';
+        checkboxContainer.style.alignItems = 'center';
         
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
-        checkbox.id = control.id;
-        checkbox.checked = control.checked;
+        checkbox.id = item.id;
+        checkbox.checked = item.defaultChecked;
+        checkbox.style.margin = '0 5px 0 0';
         
         const label = document.createElement('label');
-        label.htmlFor = control.id;
-        label.textContent = control.label;
+        label.htmlFor = item.id;
+        label.textContent = item.label;
+        label.style.fontSize = '0.9em';
         
-        // Evento de mudança
-        checkbox.addEventListener('change', () => {
-            // Disparar evento customizado
-            document.dispatchEvent(new CustomEvent(control.event, {
-                detail: { visible: checkbox.checked }
+        checkboxContainer.appendChild(checkbox);
+        checkboxContainer.appendChild(label);
+        gridContainer.appendChild(checkboxContainer);
+        
+        // Criar evento para o checkbox
+        checkbox.addEventListener('change', function() {
+            document.dispatchEvent(new CustomEvent(item.eventName, {
+                detail: { visible: this.checked }
             }));
         });
-        
-        controlContainer.appendChild(checkbox);
-        controlContainer.appendChild(label);
-        container.appendChild(controlContainer);
     });
-    
-    return container;
 }
 
 /**
@@ -113,6 +152,10 @@ export function getVisibilityState() {
         skyboxVisible,
         asteroidBeltVisible,
         saturnRingsVisible,
-        asteroidBeltRingVisible
+        uranusRingsVisible,
+        neptuneRingsVisible,
+        asteroidBeltRingVisible,
+        shadowsVisible,
+        eclipsesEnabled
     };
 } 

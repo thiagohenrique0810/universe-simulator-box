@@ -32,6 +32,18 @@ import {
     setGravitationalStrength,
     resetOrbits
 } from './modules/core/gravity-physics.js';
+import { initCollisionSystem } from './modules/core/collisions.js';
+import { 
+    preloadClimateTextures, 
+    applyClimateSystem, 
+    updateClimateSystems, 
+    toggleClimateSystems 
+} from './modules/core/climate.js';
+import {
+    initRealisticLighting,
+    updateLighting,
+    setupObjectForShadows
+} from './modules/core/lighting.js';
 
 // Importação dos módulos de UI
 import { setupPlanetSelection, updateCameraFocus, setComparisonMode } from './modules/ui/planet-selection.js';
@@ -54,6 +66,9 @@ let planets = {};
 let frameCount = 0;
 let asteroidBelt, beltRing, stars, skybox;
 let lastTime = 0;
+let collisionSystem; // Sistema de colisões
+let climateInitialized = false; // Controle para o sistema climático
+let lightingSystem; // Sistema de iluminação realista
 
 /**
  * Inicializa o sistema solar
@@ -102,6 +117,43 @@ function init() {
     // Aplicar efeitos atmosféricos aos planetas
     console.log('Aplicando efeitos atmosféricos...');
     toggleAtmosphericEffects(planets, true);
+    
+    // Inicializar o sistema de colisões
+    console.log('Inicializando sistema de colisões...');
+    collisionSystem = initCollisionSystem(scene);
+    
+    // Pré-carregar texturas para o sistema climático
+    preloadClimateTextures().then(() => {
+        // Aplicar sistema climático aos planetas que têm atmosfera
+        console.log('Aplicando sistemas climáticos aos planetas...');
+        applyClimateSystem(planets.terra, 'terra');
+        applyClimateSystem(planets.venus, 'venus');
+        applyClimateSystem(planets.jupiter, 'jupiter');
+        applyClimateSystem(planets.saturno, 'saturno');
+        applyClimateSystem(planets.urano, 'urano');
+        applyClimateSystem(planets.netuno, 'netuno');
+        
+        // Marcar o sistema climático como inicializado
+        climateInitialized = true;
+    }).catch(error => {
+        console.error('Erro ao carregar texturas para o sistema climático:', error);
+    });
+    
+    // Configurar iluminação realista
+    console.log('Inicializando sistema de iluminação realista...');
+    lightingSystem = initRealisticLighting(scene, planets.sol);
+    
+    // Configurar objetos para projetar e receber sombras
+    console.log('Configurando objetos para sombras...');
+    for (const planetName in planets) {
+        if (planetName !== 'sol') { // O sol não deve projetar sombras, apenas emitir luz
+            setupObjectForShadows(planets[planetName], true, true);
+        }
+    }
+    
+    // Configurar o renderer para sombras
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     
     // Criar objeto com utilidades de câmera
     const camera_utils = {
@@ -252,10 +304,38 @@ function setupControlEvents() {
         }
     });
     
+    // Eventos para os anéis de Urano
+    document.addEventListener('toggle-uranus-rings', function(event) {
+        const visible = event.detail.visible;
+        if (planets.urano) {
+            const uranusRings = planets.urano.children.find(child => child.name === 'aneisurano' || child.name === 'aneisurano' || child.name === 'aneisurano' || child.name === 'aneisurarnoContainer');
+            if (uranusRings) {
+                uranusRings.visible = visible;
+            }
+        }
+    });
+    
+    // Eventos para os anéis de Netuno
+    document.addEventListener('toggle-neptune-rings', function(event) {
+        const visible = event.detail.visible;
+        if (planets.netuno) {
+            const neptuneRings = planets.netuno.children.find(child => child.name === 'aneisnetuno' || child.name === 'aneisnetunoContainer');
+            if (neptuneRings) {
+                neptuneRings.visible = visible;
+            }
+        }
+    });
+    
     // Eventos para efeitos atmosféricos
     document.addEventListener('toggle-atmosphere', function(event) {
         const visible = event.detail.visible;
         toggleAtmosphericEffects(planets, visible);
+    });
+    
+    // Eventos para sistema climático
+    document.addEventListener('toggle-climate', function(event) {
+        const visible = event.detail.visible;
+        toggleClimateSystems(planets, visible);
     });
     
     // Eventos para física avançada
@@ -271,6 +351,59 @@ function setupControlEvents() {
     document.addEventListener('set-gravity-strength', function(event) {
         const strength = event.detail.strength;
         setGravitationalStrength(strength);
+    });
+    
+    // Eventos para o sistema de colisões
+    document.addEventListener('toggle-collisions', function(event) {
+        const enabled = event.detail.enabled;
+        if (collisionSystem) {
+            collisionSystem.setEnabled(enabled);
+            console.log(`Sistema de colisões ${enabled ? 'ativado' : 'desativado'}`);
+        }
+    });
+    
+    document.addEventListener('set-collision-elasticity', function(event) {
+        const value = event.detail.value;
+        if (collisionSystem) {
+            collisionSystem.setSettings({ elasticity: value });
+            console.log(`Elasticidade das colisões ajustada para: ${value.toFixed(1)}`);
+        }
+    });
+    
+    document.addEventListener('set-explosion-intensity', function(event) {
+        const value = event.detail.value;
+        if (collisionSystem) {
+            collisionSystem.setSettings({ 
+                debrisCount: Math.floor(20 * value),
+                explosionDuration: Math.floor(2000 * value)
+            });
+            console.log(`Intensidade das explosões ajustada para: ${value.toFixed(1)}x`);
+        }
+    });
+    
+    // Eventos para o sistema de iluminação realista
+    document.addEventListener('toggle-shadows', function(event) {
+        const enabled = event.detail.enabled;
+        if (lightingSystem) {
+            lightingSystem.setShadowsEnabled(enabled);
+            console.log(`Sombras ${enabled ? 'ativadas' : 'desativadas'}`);
+        }
+    });
+    
+    document.addEventListener('toggle-eclipses', function(event) {
+        const enabled = event.detail.enabled;
+        if (lightingSystem) {
+            lightingSystem.setEclipsesEnabled(enabled);
+            console.log(`Detecção de eclipses ${enabled ? 'ativada' : 'desativada'}`);
+        }
+    });
+    
+    document.addEventListener('set-sun-intensity', function(event) {
+        const intensity = event.detail.intensity;
+        if (lightingSystem) {
+            lightingSystem.setIntensity(intensity);
+            console.log(`Intensidade solar ajustada para: ${intensity.toFixed(1)}`);
+        }
     });
 }
 
@@ -311,10 +444,23 @@ function animate(timestamp) {
     // Obter a velocidade atual da simulação
     const simulationSpeed = getSimulationSpeed();
     
+    // Obter posições e velocidades dos planetas
+    let planetPositions = {};
+    let planetVelocities = {};
+    
     // Atualizar posições dos planetas
     if (isPhysicsEnabled()) {
         // Usar modelo de física avançada com gravidade real
-        updateGravityPhysics(planets, deltaTime, simulationSpeed);
+        const physicsData = updateGravityPhysics(planets, deltaTime, simulationSpeed);
+        
+        // Atualizar referências para o sistema de colisões
+        planetPositions = physicsData.positions;
+        planetVelocities = physicsData.velocities;
+        
+        // Atualizar o sistema de colisões
+        if (collisionSystem) {
+            collisionSystem.update(planetPositions, planetVelocities);
+        }
     } else {
         // Usar modelo de órbitas predefinidas
         updatePlanetPositions(planets, simulationSpeed);
@@ -323,6 +469,16 @@ function animate(timestamp) {
     // Atualizar cinturão de asteroides
     updateAsteroidBelt(simulationSpeed);
     
+    // Atualizar sistema climático, se inicializado
+    if (climateInitialized) {
+        updateClimateSystems(deltaTime, simulationSpeed);
+    }
+    
+    // Atualizar sistema de iluminação realista
+    if (lightingSystem) {
+        lightingSystem.updateLighting(planets, camera);
+    }
+    
     // Atualizar efeito de glow do sol, se existir
     if (planets.sol && planets.sol.userData && planets.sol.userData.updateGlow) {
         planets.sol.userData.updateGlow();
@@ -330,9 +486,6 @@ function animate(timestamp) {
     
     // Atualizar o foco da câmera em um objeto selecionado
     updateCameraFocus();
-    
-    // Não verificamos mais órbitas a cada frame ou em intervalos
-    // A validação é feita apenas na inicialização
     
     // Incrementar contador de frames
     frameCount++;
