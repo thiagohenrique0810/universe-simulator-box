@@ -192,8 +192,11 @@ function createSaturnRings(planet, planetData) {
     // Desenhar um círculo dourado como base
     const gradient = ctx.createRadialGradient(centerX, centerY, ringInnerRadius / ringOuterRadius * maxRadius, 
                                              centerX, centerY, maxRadius);
-    gradient.addColorStop(0, 'rgba(210, 192, 144, 0.9)');
-    gradient.addColorStop(1, 'rgba(210, 192, 144, 0.7)');
+    gradient.addColorStop(0, 'rgba(230, 212, 164, 0.95)'); // Borda interna mais clara
+    gradient.addColorStop(0.1, 'rgba(220, 202, 154, 0.9)'); // Transição
+    gradient.addColorStop(0.3, 'rgba(210, 192, 144, 0.85)'); // Meio
+    gradient.addColorStop(0.7, 'rgba(210, 192, 144, 0.8)'); // Meio para fora
+    gradient.addColorStop(1, 'rgba(210, 192, 144, 0.7)'); // Borda externa
     
     ctx.fillStyle = gradient;
     ctx.beginPath();
@@ -203,9 +206,8 @@ function createSaturnRings(planet, planetData) {
     
     // Adicionar divisões circulares (como a divisão de Cassini)
     const ringDivisions = [
-        { pos: 0.4, width: 0.05 },  // Divisão de Cassini (principal)
         { pos: 0.7, width: 0.03 },
-        { pos: 0.85, width: 0.02 }
+        { pos: 0.85, width: 0.01 } // Espaço mais fino no anel externo
     ];
     
     for (const division of ringDivisions) {
@@ -277,24 +279,6 @@ function createSaturnRings(planet, planetData) {
     
     // Adicionar o anel ao container
     ringsContainer.add(ring);
-    
-    // Adicionar sombra sutil abaixo dos anéis
-    const shadowRing = new THREE.Mesh(
-        ringGeometry.clone(),
-        new THREE.MeshBasicMaterial({
-            color: 0x000000,
-            transparent: true,
-            opacity: 0.3,
-            side: THREE.DoubleSide,
-            blending: THREE.MultiplyBlending
-        })
-    );
-    
-    shadowRing.rotation.x = Math.PI / 2;
-    shadowRing.rotation.z = THREE.MathUtils.degToRad(5.2); // Ligeiramente diferente
-    shadowRing.position.y = -0.05; // Ligeiramente deslocada para baixo
-    
-    ringsContainer.add(shadowRing);
     
     // Marcar o planeta como tendo anéis
     planet.userData.hasRings = true;

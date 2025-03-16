@@ -112,7 +112,7 @@ function toggleSaturnRingsVisibility(visible) {
             child.children[0].geometry.type === 'RingGeometry'
         );
         
-        if (ringsContainer) {
+                if (ringsContainer) {
             ringsContainer.visible = visible;
         }
     }
