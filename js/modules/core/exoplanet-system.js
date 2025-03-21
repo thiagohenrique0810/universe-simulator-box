@@ -196,18 +196,9 @@ function addStarGlow(star, color, size) {
     
     // Adicionar função de atualização do glow
     star.userData.updateGlow = function() {
-        // Verificar se o sprite existe e tem escala
-        if (!sprite || !sprite.scale) {
-            return;
-        }
-        
         const time = Date.now() * 0.001;
         const pulseScale = 1.0 + 0.05 * Math.sin(time * 2.0);
-        
-        // Verificar se o tamanho é um número válido
-        if (typeof size === 'number' && isFinite(size)) {
-            sprite.scale.set(size * 3 * pulseScale, size * 3 * pulseScale, 1.0);
-        }
+        sprite.scale.set(size * 3 * pulseScale, size * 3 * pulseScale, 1.0);
     };
 }
 

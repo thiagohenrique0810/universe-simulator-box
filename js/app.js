@@ -100,8 +100,27 @@ let exoplanetPanel;
 // Variáveis dos controladores
 let weatherIntensity = 0.5;
 
-// Inicialização do sistema de carregamento
-const loadingSystem = initLoadingScreen(18); // Número total de etapas de carregamento
+// Variável para o sistema de carregamento
+let loadingSystem;
+
+/**
+ * Inicia o processo de carregamento
+ */
+function startLoading() {
+    // Esconder a tela inicial
+    const startScreen = document.getElementById('start-screen');
+    startScreen.classList.add('hidden');
+    
+    // Mostrar a tela de carregamento
+    const loadingScreen = document.getElementById('loading-screen');
+    loadingScreen.classList.remove('hidden');
+    
+    // Inicialização do sistema de carregamento
+    loadingSystem = initLoadingScreen(18); // Número total de etapas de carregamento
+    
+    // Iniciar o simulador
+    init();
+}
 
 /**
  * Função principal para inicializar o simulador
@@ -760,8 +779,17 @@ function animate(timestamp) {
     renderScene();
 }
 
-// Iniciar o simulador quando a página estiver carregada
-window.addEventListener('load', init);
+// Configurar o botão de início quando a página carregar
+window.addEventListener('load', function() {
+    const startButton = document.getElementById('start-button');
+    if (startButton) {
+        startButton.addEventListener('click', startLoading);
+    } else {
+        console.error('Botão de início não encontrado!');
+        // Fallback: iniciar diretamente se o botão não for encontrado
+        startLoading();
+    }
+});
 
 // Adicionar função para abrir o painel de exoplanetas
 export function openExoplanetPanel() {

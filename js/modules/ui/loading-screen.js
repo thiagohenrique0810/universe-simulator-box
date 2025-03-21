@@ -17,9 +17,8 @@ export function initLoadingScreen(steps) {
     currentStep = 0;
     loadingComplete = false;
     
-    // Garantir que a tela de carregamento esteja visível
-    const loadingScreen = document.getElementById('loading-screen');
-    loadingScreen.classList.remove('hidden');
+    // Não precisamos garantir que a tela de carregamento esteja visível,
+    // pois isso será controlado pelo botão de início no app.js
     
     // Inicializar a barra de progresso
     updateProgressBar(0);
